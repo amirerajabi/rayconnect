@@ -1,0 +1,9 @@
+node_modules/
+dist/
+out/
+desktop/release/
+.dev-data/
+*.tsbuildinfo
+.claude/settings.local.json
+desktop/core/*
+!desktop/core/.gitkeep

@@ -1,0 +1,58 @@
+appId: com.raylit.app
+productName: Raylit
+copyright: Raylit contributors
+directories:
+  output: release
+  buildResources: build
+# In-app updates (src/main/updater.ts, electron-updater): this makes electron-builder write resources/app-update.yml
+# into the app and latest.yml / latest-mac.yml / latest-linux.yml next to the installers.
+publish:
+  provider: github
+  owner: amirerajabi
+  repo: raylit
+  releaseType: release
+# Package the Electron already installed in node_modules instead of downloading it again from GitHub.
+electronDist: node_modules/electron/dist
+files:
+  - out/**
+  - package.json
+extraResources:
+  - from: ../engine/dist/engine.cjs
+    to: engine/engine.cjs
+  - from: ../ui/dist
+    to: ui
+  # An Xray copy to ship with the installer (put xray.exe, geoip.dat and geosite.dat in desktop/core). Without it
+  # the app offers to download Xray on first start.
+  - from: core
+    to: core
+    filter:
+      - '**/*'
+  - from: build/icon.ico
+    to: icon.ico
+  - from: build/icon.png
+    to: icon.png
+  - from: build/tray.png
+    to: tray.png
+  - from: build/tray-on.png
+    to: tray-on.png
+# No spaces in file names: GitHub renames release assets that contain them.
+win:
+  target: nsis
+  icon: build/icon.ico
+  artifactName: ${productName}-Setup-${version}.${ext}
+nsis:
+  oneClick: false
+  perMachine: false
+  allowToChangeInstallationDirectory: true
+  createDesktopShortcut: true
+mac:
+  icon: build/icon.png
+  category: public.app-category.utilities
+  artifactName: ${productName}-${version}-mac-${arch}.${ext}
+  # Unsigned (ad-hoc) unless Developer ID secrets are configured.
+  identity: null
+linux:
+  target: AppImage
+  icon: build/icon.png
+  category: Network
+  artifactName: ${productName}-${version}-${arch}.${ext}
