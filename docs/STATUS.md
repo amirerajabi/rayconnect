@@ -1,8 +1,8 @@
 # Status
 
-Released: 0.1.0 (https://github.com/amirerajabi/raylit, tag v0.1.0).
+Released: 0.2.0 (https://github.com/amirerajabi/raylit, tag v0.2.0). Before it: 0.1.0.
 
-## On `main`, not released yet
+## In 0.2.0
 
 - New layout: icon rail with one page each for Connection, Servers (cards with country badges and delay),
   Subscriptions (usage, expiry, update), Log and Settings. The Grabbit-style toolbar, table, dock and details pane are
@@ -33,7 +33,7 @@ Released: 0.1.0 (https://github.com/amirerajabi/raylit, tag v0.1.0).
 
 - Clicking the tray icon and menu by hand, launch at login and the file picker (need a person at the desktop).
 - Running the installer itself (0.1.0's packaged app starts and shows the first-run screen).
-- The updater going from one version to the next (first chance: the next release).
+- The updater taking an installed 0.1.0 to 0.2.0 (the release metadata is checked; no installed copy was watched).
 - System proxy mode against the real Windows registry (dev runs disable it on purpose).
 - macOS and Linux builds (built by the release workflow, never run by hand); System proxy there uses networksetup /
   gsettings and may ask for a password on macOS. The tray panel's position on Linux desktops that report no tray

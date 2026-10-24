@@ -1,7 +1,7 @@
 {
   "name": "raylit-desktop",
   "productName": "Raylit",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Raylit: a simple V2Ray / Xray client for Windows, macOS and Linux",
   "author": "Raylit contributors",
   "license": "MIT",
