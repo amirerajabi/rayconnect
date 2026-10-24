@@ -113,7 +113,7 @@ export type LogLevel = 'warning' | 'info' | 'debug';
 export type Language = 'en' | 'fa';
 
 export interface Settings {
-  /** system: point the OS proxy at Raylit while connected; manual: only open the local ports. */
+  /** system: point the OS proxy at RayConnect while connected; manual: only open the local ports. */
   proxyMode: ProxyMode;
   socksPort: number;
   httpPort: number;

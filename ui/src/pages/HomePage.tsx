@@ -170,7 +170,7 @@ function Figure({ icon: Icon, label, value, sub, tone, onClick, title }: { icon:
   );
 }
 
-/** Raylit needs Xray to connect: offer to download it right where the user would notice. */
+/** RayConnect needs Xray to connect: offer to download it right where the user would notice. */
 function CoreNotice() {
   const t = useT();
   const core = useEngine((s) => s.core);
@@ -178,7 +178,7 @@ function CoreNotice() {
     <div className="notice warning core-notice">
       <Download size={16} />
       <span className="flex-1">
-        {core.installing ? t('Downloading Xray… {percent}%', { percent: core.progress ?? 0 }) : core.error ? t('Xray download failed: {error}', { error: core.error }) : t('Xray (the core Raylit connects with) is not installed yet.')}
+        {core.installing ? t('Downloading Xray… {percent}%', { percent: core.progress ?? 0 }) : core.error ? t('Xray download failed: {error}', { error: core.error }) : t('Xray (the core RayConnect connects with) is not installed yet.')}
       </span>
       {!core.installing && (
         <>

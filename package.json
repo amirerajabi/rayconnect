@@ -1,9 +1,9 @@
 {
-  "name": "raylit",
+  "name": "rayconnect",
   "private": true,
   "license": "MIT",
   "version": "0.2.0",
-  "description": "Raylit: a simple V2Ray / Xray client for the desktop (Electron + React + Node engine)",
+  "description": "RayConnect: a simple V2Ray / Xray client for the desktop (Electron + React + Node engine)",
   "scripts": {
     "setup": "npm --prefix engine install && npm --prefix ui install && npm --prefix desktop install",
     "dev": "node scripts/run.mjs browser",

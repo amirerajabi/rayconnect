@@ -1,5 +1,5 @@
 /*
- * Raylit app styles: Grabbit's controls (Rowlit's language) in an icon rail + pages layout, and the tray panel.
+ * RayConnect app styles: Grabbit's controls (Rowlit's language) in an icon rail + pages layout, and the tray panel.
  * Colours, font sizes and weights only via tokens.css. Use logical properties (inline-start/end), never left/right,
  * so the layout mirrors when the UI is Persian (dir=rtl).
  */

@@ -7,7 +7,7 @@ import { useEngine } from './store/engine';
  * so the code stays readable and a missing translation falls back to English instead of a key name. `{name}` holes are
  * filled from `vars`. Messages that come from the engine (errors, log lines) stay English.
  */
-const KEY = 'raylit.language';
+const KEY = 'rayconnect.language';
 
 let current: Language = readStored();
 

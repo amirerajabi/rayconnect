@@ -1,18 +1,20 @@
-// Raylit desktop: starts the engine sidecar, opens the window, and owns the native bits (tray with Connect /
+// RayConnect desktop: starts the engine sidecar, opens the window, and owns the native bits (tray with Connect /
 // Disconnect, notifications, the file picker for the Xray executable, launch at login).
 import { app, BrowserWindow, clipboard, dialog, ipcMain, Menu, nativeImage, nativeTheme, Notification, Tray } from 'electron';
 import { writeFileSync } from 'node:fs';
 import * as path from 'node:path';
 import { CH, type Preferences, type TrayState } from '../shared/channels';
 import { startEngine, stopEngine, type EngineInfo } from './engine-process';
+import { migrateUserData } from './migrate';
 import { iconPath, trayIconPath } from './paths';
 import { TrayPanel } from './tray-panel';
 import { Updater } from './updater';
 import { createMainWindow, DARK, LIGHT, titleBarKind } from './window';
 
-const devUrl = process.env.RAYLIT_DEV_URL;
+const devUrl = process.env.RAYCONNECT_DEV_URL;
 // Separate profile (tests, portable use): settings, servers and window state all live under it.
-if (process.env.RAYLIT_USER_DATA) app.setPath('userData', process.env.RAYLIT_USER_DATA);
+if (process.env.RAYCONNECT_USER_DATA) app.setPath('userData', process.env.RAYCONNECT_USER_DATA);
+else migrateUserData(app.getPath('appData'), app.getPath('userData'));
 let win: BrowserWindow | null = null;
 let tray: Tray | null = null;
 let engine: EngineInfo | null = null;
@@ -23,6 +25,7 @@ let updater: Updater | null = null;
 let lastTrayTip = '';
 let trayMenu: Menu | null = null;
 let panel: TrayPanel | null = null;
+let loginItemSynced = false;
 
 if (!app.requestSingleInstanceLock()) {
   app.quit();
@@ -32,16 +35,18 @@ if (!app.requestSingleInstanceLock()) {
 }
 
 async function start(): Promise<void> {
+  // Still the id from before the rename to RayConnect: Windows keys notifications, the taskbar and the launch-at-login
+  // entry on it, and the installer its uninstall entry (appId in electron-builder.yml), so updates replace the old app.
   app.setAppUserModelId('com.raylit.app');
   try {
     engine = await startEngine();
   } catch (e) {
-    dialog.showErrorBox('Raylit', `Could not start the Raylit engine.\n\n${e instanceof Error ? e.message : String(e)}`);
+    dialog.showErrorBox('RayConnect', `Could not start the RayConnect engine.\n\n${e instanceof Error ? e.message : String(e)}`);
     app.exit(1);
     return;
   }
   // A smoke test stays offline unless it points the updater at a test feed.
-  updater = await Updater.create((m) => console.log(m), !!process.env.RAYLIT_SMOKE_SHOT && !process.env.RAYLIT_UPDATE_FEED);
+  updater = await Updater.create((m) => console.log(m), !!process.env.RAYCONNECT_SMOKE_SHOT && !process.env.RAYCONNECT_UPDATE_FEED);
   installIpc();
   installMenu();
   openWindow();
@@ -53,7 +58,7 @@ function openWindow(): void {
   if (!engine) return;
   win = createMainWindow(engine, path.join(__dirname, 'preload.js'), devUrl);
   win.webContents.once('did-finish-load', () => {
-    const shot = process.env.RAYLIT_SMOKE_SHOT;
+    const shot = process.env.RAYCONNECT_SMOKE_SHOT;
     if (shot) smokeShot(shot);
   });
   win.on('close', (e) => {
@@ -98,7 +103,7 @@ const TRAY_FA: Record<string, string> = {
   Connect: 'اتصال',
   Disconnect: 'قطع اتصال',
   'Use as system proxy': 'استفاده به عنوان پروکسی سیستم',
-  'Show Raylit': 'نمایش Raylit',
+  'Show RayConnect': 'نمایش RayConnect',
   'Import from clipboard': 'وارد کردن از کلیپ‌بورد',
   'Settings…': 'تنظیمات…',
   Quit: 'خروج',
@@ -131,7 +136,7 @@ function updateTray(): void {
   const image = nativeImage.createFromPath(trayIconPath(on));
   if (!image.isEmpty()) tray.setImage(image.resize({ width: 16, height: 16 }));
   const label = on ? (server ? tr('Connected to {server}', server) : tr('Connected')) : status === 'connecting' ? tr('Connecting…') : tr('Not connected');
-  const tip = `Raylit: ${label}`.slice(0, 127);
+  const tip = `RayConnect: ${label}`.slice(0, 127);
   // Logged so smoke tests (and bug reports) can see what the tray shows.
   if (tip !== lastTrayTip) console.log(`tray: ${tip}${on ? ' [green icon]' : ''}`);
   lastTrayTip = tip;
@@ -141,7 +146,7 @@ function updateTray(): void {
     { label: on || status === 'connecting' ? tr('Disconnect') : tr('Connect'), click: () => sendCommand('conn.toggle', false) },
     { label: tr('Use as system proxy'), type: 'checkbox', checked: systemProxy, click: () => sendCommand('proxy.toggle', false) },
     { type: 'separator' },
-    { label: tr('Show Raylit'), click: showWindow },
+    { label: tr('Show RayConnect'), click: showWindow },
     { label: tr('Import from clipboard'), click: () => sendCommand('server.paste') },
     { label: tr('Settings…'), click: () => sendCommand('nav.settings') },
     { type: 'separator' },
@@ -198,8 +203,11 @@ function installIpc(): void {
   });
   ipcMain.on(CH.setPreferences, (_e, p: Preferences) => {
     const next: Preferences = { minimizeToTray: !!p?.minimizeToTray, autoUpdate: p?.autoUpdate !== false, launchAtLogin: !!p?.launchAtLogin, language: p?.language === 'fa' ? 'fa' : 'en' };
-    if (next.launchAtLogin !== prefs.launchAtLogin && app.isPackaged) {
+    // Once per start as well: the entry holds the executable's path, which an update can change (Raylit.exe became
+    // RayConnect.exe), and a stale entry would start nothing at sign-in.
+    if (app.isPackaged && (next.launchAtLogin !== prefs.launchAtLogin || !loginItemSynced)) {
       app.setLoginItemSettings({ openAtLogin: next.launchAtLogin, args: ['--hidden'] });
+      loginItemSynced = true;
     }
     const relabel = next.language !== prefs.language;
     prefs = next;
@@ -244,11 +252,11 @@ function quit(): void {
   app.quit();
 }
 
-/** Smoke test (RAYLIT_SMOKE_SHOT=<file.png>): let the UI connect to the engine, capture the window, quit. */
+/** Smoke test (RAYCONNECT_SMOKE_SHOT=<file.png>): let the UI connect to the engine, capture the window, quit. */
 function smokeShot(file: string): void {
-  const delay = Number(process.env.RAYLIT_SMOKE_DELAY_MS) || 3000;
-  // RAYLIT_SMOKE_TRAY_SHOT=<file.png>: also open the tray panel and capture it.
-  const trayShot = process.env.RAYLIT_SMOKE_TRAY_SHOT;
+  const delay = Number(process.env.RAYCONNECT_SMOKE_DELAY_MS) || 3000;
+  // RAYCONNECT_SMOKE_TRAY_SHOT=<file.png>: also open the tray panel and capture it.
+  const trayShot = process.env.RAYCONNECT_SMOKE_TRAY_SHOT;
   if (trayShot) {
     setTimeout(() => {
       try {

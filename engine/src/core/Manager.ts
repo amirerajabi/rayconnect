@@ -279,7 +279,7 @@ export class Manager extends EventEmitter {
     let s = this.servers[i];
     if (typeof patch.link === 'string' && patch.link.trim() && patch.link.trim() !== buildLink(s.name, configOf(s))) {
       const p = parseLink(patch.link);
-      if (!p) throw new Error('That is not a share link Raylit understands');
+      if (!p) throw new Error('That is not a share link RayConnect understands');
       s = { ...p.config, id: s.id, name: s.name, groupId: s.groupId, delay: null, addedAt: s.addedAt };
     }
     if (typeof patch.name === 'string' && patch.name.trim()) s = { ...s, name: patch.name.trim().slice(0, 200) };

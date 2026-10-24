@@ -5,7 +5,7 @@ import { errorMessage } from './core/util';
 import { createServer } from './http/server';
 
 /**
- * Raylit engine. Run by the desktop app as a utility process (it passes --port 0, --token and --data-dir), or on its
+ * RayConnect engine. Run by the desktop app as a utility process (it passes --port 0, --token and --data-dir), or on its
  * own for UI development: `npm run dev` listens on 7330 with the token "dev".
  */
 function arg(name: string): string | undefined {
@@ -14,9 +14,9 @@ function arg(name: string): string | undefined {
 }
 
 function defaultDataDir(): string {
-  if (process.platform === 'win32') return path.join(process.env.APPDATA ?? path.join(os.homedir(), 'AppData', 'Roaming'), 'Raylit');
-  if (process.platform === 'darwin') return path.join(os.homedir(), 'Library', 'Application Support', 'Raylit');
-  return path.join(process.env.XDG_CONFIG_HOME ?? path.join(os.homedir(), '.config'), 'raylit');
+  if (process.platform === 'win32') return path.join(process.env.APPDATA ?? path.join(os.homedir(), 'AppData', 'Roaming'), 'RayConnect');
+  if (process.platform === 'darwin') return path.join(os.homedir(), 'Library', 'Application Support', 'RayConnect');
+  return path.join(process.env.XDG_CONFIG_HOME ?? path.join(os.homedir(), '.config'), 'rayconnect');
 }
 
 const port = Number(arg('port') ?? 7330);
@@ -50,7 +50,7 @@ void manager.load().then(() => {
   server.listen(port, '127.0.0.1', () => {
     const addr = server.address();
     const actual = typeof addr === 'object' && addr ? addr.port : port;
-    console.log(`Raylit engine listening on http://127.0.0.1:${actual} (data: ${dataDir})`);
+    console.log(`RayConnect engine listening on http://127.0.0.1:${actual} (data: ${dataDir})`);
     report({ type: 'ready', port: actual });
     if (manager.getSettings().autoConnect && manager.state().selectedId) void manager.connect().catch(() => undefined);
   });

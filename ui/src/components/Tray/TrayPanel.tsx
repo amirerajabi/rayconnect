@@ -83,7 +83,7 @@ export function TrayPanel() {
 
       <div className="tray-foot">
         <button type="button" className="btn btn-xs" onClick={() => getPlatform().showMainWindow()}>
-          {t('Open Raylit')}
+          {t('Open RayConnect')}
         </button>
         {servers.length > 1 && (
           <button type="button" className="icon-btn sm" disabled={testing || busy} title={t('Connect to the fastest server')} aria-label={t('Connect to the fastest server')} onClick={() => void connectFastest()}>

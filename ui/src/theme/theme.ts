@@ -5,7 +5,7 @@ import { useEngine } from '../store/engine';
 
 export type EffectiveTheme = 'light' | 'dark';
 
-const KEY = 'raylit.theme';
+const KEY = 'rayconnect.theme';
 const media = () => window.matchMedia('(prefers-color-scheme: dark)');
 
 function resolve(pref: ThemePref): EffectiveTheme {

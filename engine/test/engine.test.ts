@@ -22,7 +22,7 @@ import { defaultSettings, mergeSettings } from '../src/core/settings';
 const UUID = '6c2d2a8e-1f0b-4b6e-9a51-3f1f5f1d2c11';
 
 function tmpDir(): string {
-  return fs.mkdtempSync(path.join(os.tmpdir(), 'raylit-test-'));
+  return fs.mkdtempSync(path.join(os.tmpdir(), 'rayconnect-test-'));
 }
 
 const vmessJson = { v: '2', ps: 'Frankfurt 1', add: 'de.example.com', port: '443', id: UUID, aid: '0', scy: 'auto', net: 'ws', type: 'none', host: 'cdn.example.com', path: '/ray', tls: 'tls', sni: 'cdn.example.com', fp: 'chrome' };
@@ -310,15 +310,15 @@ describe('subscriptions', () => {
   });
 });
 
-/** Xray to test with: RAYLIT_TEST_XRAY, or the copy v2rayN installs. */
+/** Xray to test with: RAYCONNECT_TEST_XRAY, or the copy v2rayN installs. */
 function testCore(): string | null {
-  const candidates = [process.env.RAYLIT_TEST_XRAY ?? '', 'C:\\Program Files\\v2rayN-windows-64\\bin\\xray\\xray.exe', '/usr/local/bin/xray', '/usr/bin/xray'];
+  const candidates = [process.env.RAYCONNECT_TEST_XRAY ?? '', 'C:\\Program Files\\v2rayN-windows-64\\bin\\xray\\xray.exe', '/usr/local/bin/xray', '/usr/bin/xray'];
   return candidates.find((c) => c && fs.existsSync(c)) ?? null;
 }
 
 const core = testCore();
 
-describe('a real tunnel through Xray', { skip: core ? false : 'no Xray executable (set RAYLIT_TEST_XRAY)' }, () => {
+describe('a real tunnel through Xray', { skip: core ? false : 'no Xray executable (set RAYCONNECT_TEST_XRAY)' }, () => {
   let xrayServer: ChildProcess;
   let target: http.Server;
   let serverPort = 0;

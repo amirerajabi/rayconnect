@@ -4,7 +4,7 @@ import { fetchUrl } from './net';
 import { parseLinks, type ParsedLink } from './links';
 
 // Panels (Marzban, 3x-ui, …) pick the response format by user agent; this one gets plain share links.
-const USER_AGENT = 'v2rayN/7.0 Raylit';
+const USER_AGENT = 'v2rayN/7.0 RayConnect';
 
 export interface FetchedSubscription {
   links: ParsedLink[];
@@ -38,7 +38,7 @@ export async function fetchSubscription(url: string, proxyPort?: number): Promis
   const res = await fetchUrl(url, { proxyPort, timeoutMs: 30_000, maxBytes: 10 * 1024 * 1024, headers: { 'User-Agent': USER_AGENT } });
   if (res.status !== 200) throw new Error(`The subscription server answered ${res.status}`);
   const { links, skipped } = parseLinks(res.body.toString('utf8'));
-  if (links.length === 0) throw new Error('The subscription contains no servers Raylit can use');
+  if (links.length === 0) throw new Error('The subscription contains no servers RayConnect can use');
   const header = (name: string) => {
     const h = res.headers[name];
     return Array.isArray(h) ? h[0] : h;

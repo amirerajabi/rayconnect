@@ -1,5 +1,5 @@
 /*
- * Raylit design tokens (Grabbit's, with its own brand and status colours): the single place where colours are written down; every component uses these variables.
+ * RayConnect design tokens (Grabbit's, with its own brand and status colours): the single place where colours are written down; every component uses these variables.
  * Theme is switched by [data-theme] on <html> (theme/theme.ts); 'system' follows the OS live.
  */
 

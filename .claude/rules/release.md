@@ -1,4 +1,4 @@
-# Release rules (Grabbit's, for Raylit)
+# Release rules (Grabbit's, for RayConnect)
 
 - **One version for everything:** `package.json`, `engine/`, `ui/`, `desktop/` (all via `npm version <v>
   --no-git-tag-version` so the lock files follow) and `ENGINE_VERSION` in `engine/src/http/server.ts`.
@@ -7,7 +7,7 @@
 - **Release assets have no spaces in their names** (GitHub would rename them and break `latest*.yml`). The
   `artifactName` patterns in `desktop/electron-builder.yml` set this; keep them.
 - **The auto-updater contract:** installed copies read `latest.yml` (Windows), `latest-mac.yml` and `latest-linux.yml`
-  from the newest release of `amirerajabi/raylit` (`publish:` in `electron-builder.yml`). The release workflow checks
+  from the newest release of `amirerajabi/rayconnect` (`publish:` in `electron-builder.yml`). The release workflow checks
   that all three exist, name this version and point at uploaded files. Never remove those checks.
 - **A version that shipped is never rebuilt under the same number.** Installed copies compare versions, not checksums.
   Fix forward with the next patch version.

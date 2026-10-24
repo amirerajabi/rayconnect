@@ -17,7 +17,7 @@ async function call<T>(method: string, path: string, body?: unknown): Promise<T>
       body: body !== undefined ? JSON.stringify(body) : undefined,
     });
   } catch {
-    throw new ApiError(0, 'Cannot reach the Raylit engine');
+    throw new ApiError(0, 'Cannot reach the RayConnect engine');
   }
   const data = (await res.json().catch(() => ({}))) as { error?: string };
   if (!res.ok) throw new ApiError(res.status, data.error ?? `Request failed (${res.status})`);

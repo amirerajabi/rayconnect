@@ -12,7 +12,7 @@ applyBootTheme();
 if (import.meta.env.DEV) {
   // Dev builds only: stores on window for inspection from DevTools.
   void Promise.all([import('./store/ui'), import('./store/servers'), import('./store/connection'), import('./store/engine')]).then(([ui, sv, cn, en]) => {
-    Object.assign(window, { __raylit: { ui: ui.useUi, servers: sv.useServers, connection: cn.useConnection, engine: en.useEngine } });
+    Object.assign(window, { __rayconnect: { ui: ui.useUi, servers: sv.useServers, connection: cn.useConnection, engine: en.useEngine } });
   });
 }
 const platform = getPlatform();

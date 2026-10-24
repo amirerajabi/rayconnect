@@ -82,7 +82,7 @@ export function createMainWindow(engine: EngineInfo, preloadPath: string, devUrl
     minWidth: 640,
     minHeight: 520,
     show: false,
-    title: 'Raylit',
+    title: 'RayConnect',
     icon: iconPath(),
     backgroundColor: colors.bg,
     // Frameless top: our glass top bar is the title bar; Windows draws its caption buttons over it, macOS its lights.

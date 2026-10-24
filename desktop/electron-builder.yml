@@ -1,6 +1,8 @@
+# The id from before the app was renamed to RayConnect (0.3.0). Keep it: the installer finds the copy to update by it,
+# and a new id would install RayConnect next to an old Raylit instead of replacing it.
 appId: com.raylit.app
-productName: Raylit
-copyright: Raylit contributors
+productName: RayConnect
+copyright: RayConnect contributors
 directories:
   output: release
   buildResources: build
@@ -9,7 +11,7 @@ directories:
 publish:
   provider: github
   owner: amirerajabi
-  repo: raylit
+  repo: rayconnect
   releaseType: release
 # Package the Electron already installed in node_modules instead of downloading it again from GitHub.
 electronDist: node_modules/electron/dist

@@ -1,4 +1,4 @@
-// Small HTTP client with what Raylit needs and Node's fetch lacks: going through an HTTP proxy (CONNECT for https),
+// Small HTTP client with what RayConnect needs and Node's fetch lacks: going through an HTTP proxy (CONNECT for https),
 // a hard overall timeout and a size cap. Also TCP ping and free-port helpers.
 import * as http from 'node:http';
 import * as https from 'node:https';
@@ -49,7 +49,7 @@ export function fetchUrl(url: string, opts: FetchOptions = {}, redirects = 0): P
     const timer = setTimeout(() => finish(new Error('Timed out')), timeoutMs);
 
     const send = (socket?: net.Socket) => {
-      const headers = { 'User-Agent': 'Raylit', Accept: '*/*', ...opts.headers };
+      const headers = { 'User-Agent': 'RayConnect', Accept: '*/*', ...opts.headers };
       const common = { method: 'GET', headers, path: `${u.pathname}${u.search}`, host: u.hostname, port: u.port || (secure ? 443 : 80) };
       let req: http.ClientRequest;
       if (socket && secure) {

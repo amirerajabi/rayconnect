@@ -1,9 +1,9 @@
 {
-  "name": "raylit-desktop",
-  "productName": "Raylit",
+  "name": "rayconnect-desktop",
+  "productName": "RayConnect",
   "version": "0.2.0",
-  "description": "Raylit: a simple V2Ray / Xray client for Windows, macOS and Linux",
-  "author": "Raylit contributors",
+  "description": "RayConnect: a simple V2Ray / Xray client for Windows, macOS and Linux",
+  "author": "RayConnect contributors",
   "license": "MIT",
   "private": true,
   "main": "out/main.js",

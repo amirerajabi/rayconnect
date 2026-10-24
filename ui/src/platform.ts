@@ -17,7 +17,7 @@ export interface TrayState {
 }
 
 /**
- * What the UI needs from its host. In Electron the preload script exposes `window.raylit`; in a plain browser
+ * What the UI needs from its host. In Electron the preload script exposes `window.rayconnect`; in a plain browser
  * (npm run dev) the fallbacks below talk to the dev engine and skip the native bits.
  */
 export interface DesktopBridge {
@@ -51,7 +51,7 @@ export interface DesktopBridge {
 
 declare global {
   interface Window {
-    raylit?: DesktopBridge;
+    rayconnect?: DesktopBridge;
   }
 }
 
@@ -102,7 +102,7 @@ export function isTrayPanel(): boolean {
 let current: Platform | null = null;
 
 export function getPlatform(): Platform {
-  if (!current) current = window.raylit ? { ...window.raylit, kind: 'electron' } : browserPlatform();
+  if (!current) current = window.rayconnect ? { ...window.rayconnect, kind: 'electron' } : browserPlatform();
   return current;
 }
 

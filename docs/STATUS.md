@@ -1,6 +1,14 @@
 # Status
 
-Released: 0.2.0 (https://github.com/amirerajabi/raylit, tag v0.2.0). Before it: 0.1.0.
+Released: 0.2.0 (tag v0.2.0), as Raylit. Before it: 0.1.0. The repository is now https://github.com/amirerajabi/rayconnect
+(renamed from `raylit`; GitHub redirects the old URLs, which is how installed 0.1.0 / 0.2.0 copies still find updates).
+
+## On `main`, not released yet
+
+- Renamed to **RayConnect** (product, packages, env vars `RAYCONNECT_*`, IPC, docs). The app id stays `com.raylit.app`
+  so the installer updates the old app in place. On first start the desktop moves `%APPDATA%\Raylit` to
+  `%APPDATA%\RayConnect` (`desktop/src/main/migrate.ts`), and the launch-at-login entry is re-registered with the new
+  executable. Installed copies only get the new name with the next release.
 
 ## In 0.2.0
 

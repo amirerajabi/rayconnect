@@ -80,7 +80,7 @@ function EngineBanner() {
   if (!err && ws !== 'reconnecting') return null;
   return (
     <div className="engine-banner" role="alert">
-      <span>{err ?? t('Lost the connection to the Raylit engine. Reconnecting…')}</span>
+      <span>{err ?? t('Lost the connection to the RayConnect engine. Reconnecting…')}</span>
       <button className="btn btn-xs" onClick={() => void reloadState()}>
         <RefreshCw size={12} /> {t('Retry')}
       </button>

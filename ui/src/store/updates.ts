@@ -23,9 +23,9 @@ export const useUpdates = create<UpdatesState>((set, get) => ({
     if (!status || prev?.state === status.state) return;
     const version = status.version ?? '';
     if (status.state === 'ready') {
-      useUi.getState().toast({ level: 'success', text: t('Raylit {version} is ready', { version }), detail: t('Click “Restart to update” at the top, or it installs when you quit.') });
+      useUi.getState().toast({ level: 'success', text: t('RayConnect {version} is ready', { version }), detail: t('Click “Restart to update” at the top, or it installs when you quit.') });
     } else if (status.state === 'available') {
-      useUi.getState().toast({ level: 'info', text: t('Raylit {version} is available', { version }), detail: t('Click the update button at the top to download it.') });
+      useUi.getState().toast({ level: 'info', text: t('RayConnect {version} is available', { version }), detail: t('Click the update button at the top to download it.') });
     }
   },
   async check() {
@@ -34,7 +34,7 @@ export const useUpdates = create<UpdatesState>((set, get) => ({
     set({ manual: false });
     if (!s) return;
     get().setStatus(s);
-    if (s.state === 'up-to-date') useUi.getState().toast({ level: 'success', text: t('Raylit is up to date'), detail: t('Version {version}', { version: s.currentVersion }) });
+    if (s.state === 'up-to-date') useUi.getState().toast({ level: 'success', text: t('RayConnect is up to date'), detail: t('Version {version}', { version: s.currentVersion }) });
     else if (s.state === 'error') useUi.getState().toast({ level: 'error', text: t('Could not check for updates'), detail: s.message });
   },
   async install() {
@@ -58,7 +58,7 @@ export function updateChip(s: UpdateStatus | null): { text: string; tone: 'muted
     case 'ready':
       return { text: 'Restart to update to {version}', tone: 'success' };
     case 'available':
-      return { text: 'Raylit {version} available', tone: 'accent' };
+      return { text: 'RayConnect {version} available', tone: 'accent' };
     case 'error':
       return { text: 'Update check failed', tone: 'error' };
     default:

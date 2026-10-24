@@ -1,7 +1,7 @@
 name: CI
 
 # Typecheck every package, run the engine tests and build the UI on every push and pull request. The real-tunnel
-# tests skip themselves here (no Xray on the runner) unless RAYLIT_TEST_XRAY points at one.
+# tests skip themselves here (no Xray on the runner) unless RAYCONNECT_TEST_XRAY points at one.
 on:
   push:
     branches: [main]

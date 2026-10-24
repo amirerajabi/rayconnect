@@ -110,7 +110,7 @@ jobs:
       - uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ env.TAG }}
-          name: Raylit ${{ env.TAG }}
+          name: RayConnect ${{ env.TAG }}
           body_path: docs/release-notes/${{ env.TAG }}.md
           files: artifacts/*
           fail_on_unmatched_files: true

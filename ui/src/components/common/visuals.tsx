@@ -3,7 +3,7 @@ import { displayShortcut, shortcutParts } from '../../app/keys';
 import { t } from '../../i18n';
 import { delayText, delayTone, protocolLabel } from '../../lib/format';
 
-/** The Raylit mark: a navy tile, a dial and a lit ray from its centre (same artwork as the app icon). */
+/** The RayConnect mark: a navy tile, a dial and a lit ray from its centre (same artwork as the app icon). */
 export function BrandMark({ size = 18 }: { size?: number }) {
   return (
     <svg className="brand-mark-svg" width={size} height={size} viewBox="0 0 32 32" aria-hidden="true">

@@ -1,4 +1,4 @@
-// Preload (sandboxed): exposes `window.raylit`, the only bridge between the UI and Electron.
+// Preload (sandboxed): exposes `window.rayconnect`, the only bridge between the UI and Electron.
 import { contextBridge, ipcRenderer } from 'electron';
 import { ARG, CH, type Preferences, type TrayState } from '../shared/channels';
 
@@ -15,7 +15,7 @@ function subscribe<T>(channel: string, cb: (value: T) => void): () => void {
   return () => ipcRenderer.removeListener(channel, listener);
 }
 
-contextBridge.exposeInMainWorld('raylit', {
+contextBridge.exposeInMainWorld('rayconnect', {
   engineUrl: arg(ARG.engine),
   token: arg(ARG.token),
   os: process.platform === 'darwin' ? 'darwin' : process.platform === 'win32' ? 'win32' : 'linux',

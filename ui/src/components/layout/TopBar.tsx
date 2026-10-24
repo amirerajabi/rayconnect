@@ -18,7 +18,7 @@ export function TopBar({ theme }: { theme: EffectiveTheme }) {
     <header className="topbar" aria-label={t('Application')}>
       <div className="brand">
         <BrandMark size={18} />
-        <span className="brand-name">Raylit</span>
+        <span className="brand-name">RayConnect</span>
       </div>
       <div className="flex-1 topbar-drag" />
       <button type="button" className="palette-trigger" onClick={() => useUi.getState().set({ paletteOpen: true })} title={withShortcut(t('Search servers and commands'), paletteShortcut)}>

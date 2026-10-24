@@ -17,9 +17,9 @@ export function startEngine(): Promise<EngineInfo> {
   return new Promise((resolve, reject) => {
     // Port 0: nothing outside the app needs to find the engine, so any free port will do.
     const proc = utilityProcess.fork(engineEntry(), ['--port', '0', '--token', token, '--data-dir', dataDir()], {
-      serviceName: 'Raylit engine',
+      serviceName: 'RayConnect engine',
       stdio: 'pipe',
-      env: { ...process.env, RAYLIT_BUNDLED_CORE: bundledCoreDir() },
+      env: { ...process.env, RAYCONNECT_BUNDLED_CORE: bundledCoreDir() },
     });
     child = proc;
     const timer = setTimeout(() => reject(new Error('The engine did not start within 15 seconds')), 15_000);

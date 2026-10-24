@@ -1,4 +1,4 @@
-// Launchers (Grabbit's, with Raylit's ports):
+// Launchers (Grabbit's, with RayConnect's ports):
 //   browser      engine (tsx watch, token "dev") + Vite; open http://localhost:5174. The engine takes 7330, or a free
 //                port when 7330 is busy, and Vite is told which (VITE_ENGINE_URL).
 //   desktop-dev  Vite + Electron loading it (Electron starts its own engine from engine/dist, rebuilt first)
@@ -6,8 +6,8 @@
 // Development state lives in .dev-data/: the engine's data in browser mode, and a separate Electron profile
 // (.dev-data/desktop) in the desktop modes, so a dev window never shares the installed app's profile or servers.
 //
-// Development runs never touch the OS proxy setting (RAYLIT_NO_SYSPROXY=1): the machine's proxy may belong to the
-// installed Raylit or another client. Set RAYLIT_SYSPROXY=1 to test System proxy mode for real.
+// Development runs never touch the OS proxy setting (RAYCONNECT_NO_SYSPROXY=1): the machine's proxy may belong to the
+// installed RayConnect or another client. Set RAYCONNECT_SYSPROXY=1 to test System proxy mode for real.
 import { spawn, spawnSync } from 'node:child_process';
 import { createRequire } from 'node:module';
 import net from 'node:net';
@@ -21,7 +21,7 @@ const children = [];
 const ENGINE_PORT = 7330;
 const UI_PORT = 5174;
 
-const baseEnv = { ...process.env, ...(process.env.RAYLIT_SYSPROXY === '1' ? {} : { RAYLIT_NO_SYSPROXY: '1' }) };
+const baseEnv = { ...process.env, ...(process.env.RAYCONNECT_SYSPROXY === '1' ? {} : { RAYCONNECT_NO_SYSPROXY: '1' }) };
 
 function run(cmd, args, opts = {}) {
   const child = spawn(cmd, args, { stdio: 'inherit', shell: win, cwd: root, env: baseEnv, ...opts });
@@ -89,7 +89,7 @@ function freePort() {
   });
 }
 
-const devProfile = { ...baseEnv, RAYLIT_USER_DATA: process.env.RAYLIT_USER_DATA ?? join(root, '.dev-data', 'desktop') };
+const devProfile = { ...baseEnv, RAYCONNECT_USER_DATA: process.env.RAYCONNECT_USER_DATA ?? join(root, '.dev-data', 'desktop') };
 
 function electronBinary() {
   return createRequire(join(root, 'desktop', 'package.json'))('electron');
@@ -112,13 +112,13 @@ if (mode === 'browser') {
   run('npx', ['tsx', 'watch', 'src/index.ts', '--port', String(port), '--token', 'dev', '--data-dir', '../.dev-data'], { cwd: join(root, 'engine') });
   run('npm', ['--prefix', 'ui', 'run', 'dev'], { env: { ...baseEnv, VITE_ENGINE_URL: `http://127.0.0.1:${port}` } });
   await waitForPort(UI_PORT);
-  console.log(`\n  Raylit UI: http://localhost:${UI_PORT}  (engine on 127.0.0.1:${port}, token "dev")\n`);
+  console.log(`\n  RayConnect UI: http://localhost:${UI_PORT}  (engine on 127.0.0.1:${port}, token "dev")\n`);
 } else if (mode === 'desktop-dev') {
   npm(['--prefix', 'engine', 'run', 'bundle']);
   npm(['--prefix', 'desktop', 'run', 'bundle']);
   run('npm', ['--prefix', 'ui', 'run', 'dev']);
   await waitForPort(UI_PORT);
-  run(electronBinary(), ['.'], { cwd: join(root, 'desktop'), shell: false, env: { ...devProfile, RAYLIT_DEV_URL: `http://localhost:${UI_PORT}` } });
+  run(electronBinary(), ['.'], { cwd: join(root, 'desktop'), shell: false, env: { ...devProfile, RAYCONNECT_DEV_URL: `http://localhost:${UI_PORT}` } });
 } else if (mode === 'desktop') {
   run(electronBinary(), ['.'], { cwd: join(root, 'desktop'), shell: false, env: devProfile });
 } else {

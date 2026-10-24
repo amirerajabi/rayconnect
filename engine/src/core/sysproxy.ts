@@ -1,4 +1,4 @@
-// The OS proxy setting ("System proxy" mode). Before pointing it at Raylit we keep what was there, and we put that back
+// The OS proxy setting ("System proxy" mode). Before pointing it at RayConnect we keep what was there, and we put that back
 // on disconnect, so a user who had another proxy (or none) gets exactly that again. The backup is persisted by the
 // manager, so after a crash the next start can still restore it.
 //
@@ -6,7 +6,7 @@
 //   macOS    networksetup, for every network service (web, secure web and SOCKS proxy).
 //   Linux    GNOME's gsettings (org.gnome.system.proxy); other desktops are not touched.
 //
-// RAYLIT_NO_SYSPROXY=1 turns every call into a no-op (tests and development runs on a machine whose proxy is in use).
+// RAYCONNECT_NO_SYSPROXY=1 turns every call into a no-op (tests and development runs on a machine whose proxy is in use).
 import { execFile } from 'node:child_process';
 
 export interface ProxySnapshot {
@@ -183,7 +183,7 @@ function disabled(reason: string): SystemProxy {
 }
 
 export function systemProxy(): SystemProxy {
-  if (process.env.RAYLIT_NO_SYSPROXY === '1') return disabled('The system proxy is turned off for this run (RAYLIT_NO_SYSPROXY).');
+  if (process.env.RAYCONNECT_NO_SYSPROXY === '1') return disabled('The system proxy is turned off for this run (RAYCONNECT_NO_SYSPROXY).');
   if (process.platform === 'win32') return windows;
   if (process.platform === 'darwin') return mac;
   if (process.platform === 'linux') return gnome;

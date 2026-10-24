@@ -1,9 +1,9 @@
 {
-  "name": "raylit-engine",
+  "name": "rayconnect-engine",
   "private": true,
   "license": "MIT",
   "version": "0.2.0",
-  "description": "Raylit engine: servers, subscriptions, the Xray core process and the system proxy, behind a local HTTP + WebSocket API",
+  "description": "RayConnect engine: servers, subscriptions, the Xray core process and the system proxy, behind a local HTTP + WebSocket API",
   "type": "module",
   "scripts": {
     "dev": "tsx watch src/index.ts --port 7330 --token dev --data-dir ../.dev-data",

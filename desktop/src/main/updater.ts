@@ -5,9 +5,9 @@
 //                            \-> install mode: downloading --> ready   (Windows, AppImage, signed macOS: Restart now)
 //                            \-> notify mode:  available              (unsigned macOS: open the release page)
 //   any --error--> error (logged; automatic checks stay quiet, a manual check shows it)
-//   disabled: development runs, smoke tests, RAYLIT_DISABLE_UPDATES=1, Linux outside an AppImage.
+//   disabled: development runs, smoke tests, RAYCONNECT_DISABLE_UPDATES=1, Linux outside an AppImage.
 //
-// RAYLIT_UPDATE_FEED=<url> points the updater at a generic feed (a folder with latest.yml and the installer) instead of
+// RAYCONNECT_UPDATE_FEED=<url> points the updater at a generic feed (a folder with latest.yml and the installer) instead of
 // GitHub, also in unpackaged runs: that is how the flow is tested end to end without publishing a release.
 import { app, BrowserWindow } from 'electron';
 import { execFile } from 'node:child_process';
@@ -15,7 +15,7 @@ import * as path from 'node:path';
 import type { UpdateMode, UpdateStatus } from '../../../shared/protocol';
 import { CH } from '../shared/channels';
 
-export const RELEASES_URL = 'https://github.com/amirerajabi/raylit/releases';
+export const RELEASES_URL = 'https://github.com/amirerajabi/rayconnect/releases';
 const FIRST_CHECK_MS = 10_000;
 const CHECK_EVERY_MS = 6 * 60 * 60 * 1000;
 
@@ -66,11 +66,11 @@ export class Updater {
   }
 
   static async create(log: (m: string) => void, smokeTest: boolean): Promise<Updater> {
-    const feed = process.env.RAYLIT_UPDATE_FEED;
+    const feed = process.env.RAYCONNECT_UPDATE_FEED;
     const reason = smokeTest
       ? 'Updates are off during the smoke test.'
-      : process.env.RAYLIT_DISABLE_UPDATES === '1'
-        ? 'Updates are turned off (RAYLIT_DISABLE_UPDATES).'
+      : process.env.RAYCONNECT_DISABLE_UPDATES === '1'
+        ? 'Updates are turned off (RAYCONNECT_DISABLE_UPDATES).'
         : !app.isPackaged && !feed
           ? 'Updates are only checked in installed builds.'
           : process.platform === 'linux' && !process.env.APPIMAGE

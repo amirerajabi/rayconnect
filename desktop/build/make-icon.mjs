@@ -1,4 +1,4 @@
-// Renders the Raylit mark (same artwork as ui/public/favicon.svg) to icon.png, icon.ico, tray.png and tray-on.png
+// Renders the RayConnect mark (same artwork as ui/public/favicon.svg) to icon.png, icon.ico, tray.png and tray-on.png
 // (the tray icon while connected: a green ray) without any image library, like Grabbit's: signed-distance shapes,
 // 4x4 supersampling, a hand-written PNG encoder and an ICO that embeds PNGs.
 import { mkdirSync, writeFileSync } from 'node:fs';

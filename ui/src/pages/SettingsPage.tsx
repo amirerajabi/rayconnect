@@ -117,8 +117,8 @@ function Section({ id, s }: { id: SettingsSection; s: SettingsT }) {
               ))}
             </div>
           </Field>
-          <Toggle label={t('Connect when Raylit starts')} hint={t('To the server you used last.')} checked={s.autoConnect} onChange={(v) => save({ autoConnect: v })} />
-          {electron && <Toggle label={t('Start Raylit when I sign in')} hint={t('It starts in the tray.')} checked={s.launchAtLogin} onChange={(v) => save({ launchAtLogin: v })} />}
+          <Toggle label={t('Connect when RayConnect starts')} hint={t('To the server you used last.')} checked={s.autoConnect} onChange={(v) => save({ autoConnect: v })} />
+          {electron && <Toggle label={t('Start RayConnect when I sign in')} hint={t('It starts in the tray.')} checked={s.launchAtLogin} onChange={(v) => save({ launchAtLogin: v })} />}
           {electron && <Toggle label={t('Keep running in the tray when the window is closed')} hint={t('The connection stays up in the background.')} checked={s.minimizeToTray} onChange={(v) => save({ minimizeToTray: v })} />}
         </div>
       );
@@ -137,7 +137,7 @@ function Section({ id, s }: { id: SettingsSection; s: SettingsT }) {
             </div>
           </Field>
           <p className="muted settings-note">
-            {t("System proxy points your computer's proxy setting at Raylit while connected and puts your own setting back when you disconnect. With Proxy only, set apps (Telegram, a browser extension) to the ports below yourself.")}
+            {t("System proxy points your computer's proxy setting at RayConnect while connected and puts your own setting back when you disconnect. With Proxy only, set apps (Telegram, a browser extension) to the ports below yourself.")}
           </p>
           <div className="form-row">
             <NumberField label={t('HTTP port')} value={s.httpPort} min={1} max={65535} onSave={(n) => save({ httpPort: n })} />
@@ -190,7 +190,7 @@ function Section({ id, s }: { id: SettingsSection; s: SettingsT }) {
       return (
         <div className="settings-section about">
           <BrandMark size={48} />
-          <h3>Raylit</h3>
+          <h3>RayConnect</h3>
           <p className="muted" dir="ltr">
             {electron ? `Version ${getPlatform().appVersion} · ` : 'Browser build · '}engine {useEngine.getState().version}
           </p>
@@ -205,8 +205,8 @@ function Section({ id, s }: { id: SettingsSection; s: SettingsT }) {
               <RefreshCw size={14} /> {t('Subscriptions update on their own; real delay tests show which servers actually work.')}
             </li>
           </ul>
-          <a href="https://github.com/amirerajabi/raylit" target="_blank" rel="noreferrer">
-            github.com/amirerajabi/raylit
+          <a href="https://github.com/amirerajabi/rayconnect" target="_blank" rel="noreferrer">
+            github.com/amirerajabi/rayconnect
           </a>
         </div>
       );
@@ -238,7 +238,7 @@ function CoreSection({ s }: { s: SettingsT }) {
         <div className="flex-1">
           <strong>{core.version ? `Xray ${core.version}` : core.path ? t('Unknown file') : t('Not installed')}</strong>
           <p className="muted selectable mono-sm" dir="ltr">
-            {core.path ?? t('Raylit needs Xray to connect. Download it, or choose an xray executable you already have (for example from v2rayN).')}
+            {core.path ?? t('RayConnect needs Xray to connect. Download it, or choose an xray executable you already have (for example from v2rayN).')}
           </p>
           {core.error && <p className="text-danger">{core.error}</p>}
         </div>
@@ -285,7 +285,7 @@ function CoreSection({ s }: { s: SettingsT }) {
 const UPDATE_TEXT: Record<string, string> = {
   idle: 'Not checked yet.',
   checking: 'Checking for updates…',
-  'up-to-date': 'Raylit is up to date.',
+  'up-to-date': 'RayConnect is up to date.',
   error: 'The last check failed.',
 };
 
@@ -296,9 +296,9 @@ function UpdatesSection({ s }: { s: SettingsT }) {
   const busy = manual || status?.state === 'checking';
   const version = status?.version ?? '';
   let text = status ? t(UPDATE_TEXT[status.state] ?? '') : '';
-  if (status?.state === 'downloading') text = t('Downloading Raylit {version}: {percent}%', { version, percent: status.percent ?? 0 });
-  if (status?.state === 'ready') text = t('Raylit {version} is downloaded. Restart to install it, or it installs when you quit.', { version });
-  if (status?.state === 'available') text = t('Raylit {version} is available. macOS only updates signed apps in place, so download it from the release page.', { version });
+  if (status?.state === 'downloading') text = t('Downloading RayConnect {version}: {percent}%', { version, percent: status.percent ?? 0 });
+  if (status?.state === 'ready') text = t('RayConnect {version} is downloaded. Restart to install it, or it installs when you quit.', { version });
+  if (status?.state === 'available') text = t('RayConnect {version} is available. macOS only updates signed apps in place, so download it from the release page.', { version });
   if (status?.state === 'disabled') text = status.message ?? t('Updates are not available in this build.');
   return (
     <div className="settings-section">
@@ -310,7 +310,7 @@ function UpdatesSection({ s }: { s: SettingsT }) {
           <div className="info-card">
             <RefreshCw size={18} className="text-accent" />
             <div className="flex-1">
-              <strong>Raylit {status.currentVersion}</strong>
+              <strong>RayConnect {status.currentVersion}</strong>
               <p className={`muted${status.state === 'error' ? ' text-danger' : ''}`}>
                 {text}
                 {status.state === 'error' && status.message ? ` ${status.message}` : ''}

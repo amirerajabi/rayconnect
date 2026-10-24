@@ -1,7 +1,7 @@
 // The Xray core: where its executable is, which version it is, running it with a config, and installing it.
 //
 // Lookup order: the path chosen in Settings, then <data>/core (where "Download Xray" installs it), then a copy bundled
-// with the app (RAYLIT_BUNDLED_CORE, set by the desktop shell). geoip.dat / geosite.dat are looked up next to the
+// with the app (RAYCONNECT_BUNDLED_CORE, set by the desktop shell). geoip.dat / geosite.dat are looked up next to the
 // executable and one folder up (v2rayN's layout), and handed to Xray through XRAY_LOCATION_ASSET.
 import { spawn, type ChildProcess } from 'node:child_process';
 import { createHash } from 'node:crypto';
@@ -18,7 +18,7 @@ export function findCore(dataDir: string, configured: string): string | null {
   const candidates = [
     configured,
     path.join(dataDir, 'core', EXE),
-    process.env.RAYLIT_BUNDLED_CORE ? path.join(process.env.RAYLIT_BUNDLED_CORE, EXE) : '',
+    process.env.RAYCONNECT_BUNDLED_CORE ? path.join(process.env.RAYCONNECT_BUNDLED_CORE, EXE) : '',
   ];
   for (const c of candidates) {
     if (!c) continue;

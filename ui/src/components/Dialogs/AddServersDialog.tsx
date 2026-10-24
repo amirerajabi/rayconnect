@@ -33,7 +33,7 @@ function AddServers({ initial }: { initial: string }) {
     try {
       const r = await api.importLinks(value);
       if (r.added === 0) {
-        setError(r.duplicates ? t('These servers are already in the list.') : t('No share links found. Raylit reads vmess://, vless://, trojan:// and ss:// links.'));
+        setError(r.duplicates ? t('These servers are already in the list.') : t('No share links found. RayConnect reads vmess://, vless://, trojan:// and ss:// links.'));
         return;
       }
       const extra = [r.duplicates ? t('{n} already in the list', { n: r.duplicates }) : '', r.skipped ? t('{n} not understood', { n: r.skipped }) : ''].filter(Boolean).join(' · ');

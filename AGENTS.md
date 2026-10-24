@@ -1,6 +1,6 @@
-# Raylit — guide for coding agents
+# RayConnect — guide for coding agents
 
-Raylit is a simple V2Ray / Xray desktop client: Electron desktop app + React UI + a Node engine that runs Xray-core.
+RayConnect is a simple V2Ray / Xray desktop client: Electron desktop app + React UI + a Node engine that runs Xray-core.
 Its structure, look and conventions follow Grabbit (`C:\Users\AMIR\Desktop\DownloadManager`), which follows Rowlit.
 
 Read [docs/STATUS.md](docs/STATUS.md) first: what works, what is unfinished.
@@ -18,7 +18,7 @@ Read [docs/STATUS.md](docs/STATUS.md) first: what works, what is unfinished.
 | `engine/scripts/fetch-core.ts` | Downloads the latest Xray-core (SHA-256 checked) into `desktop/core` for release builds. |
 | `.github/workflows/` | `ci.yml` (typecheck, tests, UI build), `release.yml` (tag `v*` → installers with Xray → GitHub Release). |
 
-Public repo: https://github.com/amirerajabi/raylit (MIT). Releases there are what installed copies update from.
+Public repo: https://github.com/amirerajabi/rayconnect (MIT). Releases there are what installed copies update from.
 
 ## Commands
 
@@ -30,8 +30,8 @@ A change is done when `npm run typecheck`, `npm test`, `npm run check:i18n` and 
 in the running app (`npm run dev`, then http://localhost:5174; the tray panel at http://localhost:5174/#tray), in
 English and in Persian, not only by typechecking.
 
-Electron smoke run with a throwaway profile (PowerShell): set `RAYLIT_NO_SYSPROXY=1`, `RAYLIT_USER_DATA=<scratch>`,
-`RAYLIT_SMOKE_SHOT=<main.png>` and optionally `RAYLIT_SMOKE_TRAY_SHOT=<tray.png>`, then run
+Electron smoke run with a throwaway profile (PowerShell): set `RAYCONNECT_NO_SYSPROXY=1`, `RAYCONNECT_USER_DATA=<scratch>`,
+`RAYCONNECT_SMOKE_SHOT=<main.png>` and optionally `RAYCONNECT_SMOKE_TRAY_SHOT=<tray.png>`, then run
 `desktop\node_modules\electron\dist\electron.exe desktop`. It captures, prints `tray: …` / `smoke: …` lines and quits.
 
 ## Rules
@@ -42,8 +42,8 @@ Electron smoke run with a throwaway profile (PowerShell): set `RAYLIT_NO_SYSPROX
 - Grabbit's code rules apply: strict TypeScript, comments say why, no hex colours outside `tokens.css`, every user
   action is a command, wire types only in `shared/protocol.ts`, no new dependencies without asking.
 - **The machine's proxy is not a test bench.** The developer may run v2rayN (Xray on 10808, set as the system proxy).
-  Tests use a fake `SystemProxy`; dev runs set `RAYLIT_NO_SYSPROXY=1`. Never point the real OS proxy at a test run, and
-  never stop another client's Xray. Raylit's default ports (10818/10819) avoid v2rayN's.
+  Tests use a fake `SystemProxy`; dev runs set `RAYCONNECT_NO_SYSPROXY=1`. Never point the real OS proxy at a test run, and
+  never stop another client's Xray. RayConnect's default ports (10818/10819) avoid v2rayN's.
 - Disconnect restores the OS proxy first, then stops Xray: the other order leaves every app without network for a moment.
   The backup of the user's proxy lives in `runtime.json` so a crash is repaired on the next start. Keep both.
 - The Xray data folder must be absolute (`Manager` resolves it): Xray runs with its own folder as working directory.

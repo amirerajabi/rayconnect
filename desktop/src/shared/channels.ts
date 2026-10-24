@@ -1,28 +1,28 @@
 /** IPC channel names shared by main and preload. */
 export const CH = {
-  chooseFile: 'raylit:choose-file',
-  notify: 'raylit:notify',
-  setTheme: 'raylit:set-theme',
-  setPreferences: 'raylit:set-preferences',
-  setTrayState: 'raylit:set-tray-state',
-  readClipboard: 'raylit:read-clipboard',
-  writeClipboard: 'raylit:write-clipboard',
-  command: 'raylit:command',
-  updateStatus: 'raylit:update-status',
-  updateGet: 'raylit:update-get',
-  updateCheck: 'raylit:update-check',
-  updateInstall: 'raylit:update-install',
-  appVersion: 'raylit:app-version',
-  showMain: 'raylit:show-main',
-  hidePanel: 'raylit:hide-panel',
-  quitApp: 'raylit:quit-app',
+  chooseFile: 'rayconnect:choose-file',
+  notify: 'rayconnect:notify',
+  setTheme: 'rayconnect:set-theme',
+  setPreferences: 'rayconnect:set-preferences',
+  setTrayState: 'rayconnect:set-tray-state',
+  readClipboard: 'rayconnect:read-clipboard',
+  writeClipboard: 'rayconnect:write-clipboard',
+  command: 'rayconnect:command',
+  updateStatus: 'rayconnect:update-status',
+  updateGet: 'rayconnect:update-get',
+  updateCheck: 'rayconnect:update-check',
+  updateInstall: 'rayconnect:update-install',
+  appVersion: 'rayconnect:app-version',
+  showMain: 'rayconnect:show-main',
+  hidePanel: 'rayconnect:hide-panel',
+  quitApp: 'rayconnect:quit-app',
 } as const;
 
-/** additionalArguments passed to the renderer: --raylit-engine=<url> --raylit-token=<token> --raylit-titlebar=<kind> */
+/** additionalArguments passed to the renderer: --rayconnect-engine=<url> --rayconnect-token=<token> --rayconnect-titlebar=<kind> */
 export const ARG = {
-  engine: '--raylit-engine=',
-  token: '--raylit-token=',
-  titleBar: '--raylit-titlebar=',
+  engine: '--rayconnect-engine=',
+  token: '--rayconnect-token=',
+  titleBar: '--rayconnect-titlebar=',
 } as const;
 
 export interface Preferences {
