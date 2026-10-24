@@ -1,10 +1,10 @@
 # Status
 
-Released: 0.3.0 (tag v0.3.0), the first as RayConnect. Before it: 0.2.0 and 0.1.0 as Raylit. The repository is
+Released: 0.4.0 (tag v0.4.0). Before it: 0.3.0, the first as RayConnect; 0.2.0 and 0.1.0 as Raylit. The repository is
 https://github.com/amirerajabi/rayconnect (renamed from `raylit`; GitHub redirects the old URLs, which is how installed
 0.1.0 / 0.2.0 copies find this release).
 
-## On `main`, not released yet
+## In 0.4.0
 
 - Routing rules like v2rayN's (Settings → Routing rules): the user's own lists of sites and addresses sent through the
   server, direct or blocked, checked top to bottom before the built-in rules; plus whitelist mode (unmatched sites use
