@@ -1,7 +1,7 @@
 {
   "name": "rayconnect-desktop",
   "productName": "RayConnect",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "RayConnect: a simple V2Ray / Xray client for Windows, macOS and Linux",
   "author": "RayConnect contributors",
   "license": "MIT",

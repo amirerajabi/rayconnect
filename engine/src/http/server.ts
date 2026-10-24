@@ -5,7 +5,7 @@ import type { EngineEvent, EngineState, Settings } from '../../../shared/protoco
 import type { Manager } from '../core/Manager';
 import { errorMessage } from '../core/util';
 
-export const ENGINE_VERSION = '0.2.0';
+export const ENGINE_VERSION = '0.3.0';
 
 type Handler = (ctx: { body: any; params: Record<string, string> }) => Promise<unknown> | unknown;
 

@@ -2,7 +2,7 @@
   "name": "rayconnect",
   "private": true,
   "license": "MIT",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "RayConnect: a simple V2Ray / Xray client for the desktop (Electron + React + Node engine)",
   "scripts": {
     "setup": "npm --prefix engine install && npm --prefix ui install && npm --prefix desktop install",

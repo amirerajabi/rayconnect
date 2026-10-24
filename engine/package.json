@@ -2,7 +2,7 @@
   "name": "rayconnect-engine",
   "private": true,
   "license": "MIT",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "RayConnect engine: servers, subscriptions, the Xray core process and the system proxy, behind a local HTTP + WebSocket API",
   "type": "module",
   "scripts": {
