@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import type { UpdateStatus } from '../../../shared/protocol';
+import { t } from '../i18n';
 import { getPlatform } from '../platform';
 import { useUi } from './ui';
 
@@ -20,10 +21,11 @@ export const useUpdates = create<UpdatesState>((set, get) => ({
     const prev = get().status;
     set({ status });
     if (!status || prev?.state === status.state) return;
+    const version = status.version ?? '';
     if (status.state === 'ready') {
-      useUi.getState().toast({ level: 'success', text: `Raylit ${status.version} is ready`, detail: 'Click “Restart to update” in the status bar, or it installs when you quit.' });
+      useUi.getState().toast({ level: 'success', text: t('Raylit {version} is ready', { version }), detail: t('Click “Restart to update” at the top, or it installs when you quit.') });
     } else if (status.state === 'available') {
-      useUi.getState().toast({ level: 'info', text: `Raylit ${status.version} is available`, detail: 'Click the update chip in the status bar to download it.' });
+      useUi.getState().toast({ level: 'info', text: t('Raylit {version} is available', { version }), detail: t('Click the update button at the top to download it.') });
     }
   },
   async check() {
@@ -32,8 +34,8 @@ export const useUpdates = create<UpdatesState>((set, get) => ({
     set({ manual: false });
     if (!s) return;
     get().setStatus(s);
-    if (s.state === 'up-to-date') useUi.getState().toast({ level: 'success', text: 'Raylit is up to date', detail: `Version ${s.currentVersion}` });
-    else if (s.state === 'error') useUi.getState().toast({ level: 'error', text: 'Could not check for updates', detail: s.message });
+    if (s.state === 'up-to-date') useUi.getState().toast({ level: 'success', text: t('Raylit is up to date'), detail: t('Version {version}', { version: s.currentVersion }) });
+    else if (s.state === 'error') useUi.getState().toast({ level: 'error', text: t('Could not check for updates'), detail: s.message });
   },
   async install() {
     const s = get().status;
@@ -41,22 +43,22 @@ export const useUpdates = create<UpdatesState>((set, get) => ({
       window.open(s.releaseUrl, '_blank');
       return;
     }
-    if (!(await getPlatform().installUpdate())) useUi.getState().toast({ level: 'warning', text: 'No update is ready to install yet' });
+    if (!(await getPlatform().installUpdate())) useUi.getState().toast({ level: 'warning', text: t('No update is ready to install yet') });
   },
 }));
 
-/** Short label and tone of the status for the status bar chip; null when there is nothing to show. */
+/** Label (English, with {version} / {percent} holes for t()) and tone of the update chip; null when there is nothing to show. */
 export function updateChip(s: UpdateStatus | null): { text: string; tone: 'muted' | 'accent' | 'success' | 'error' } | null {
   if (!s) return null;
   switch (s.state) {
     case 'checking':
       return { text: 'Checking for updates…', tone: 'muted' };
     case 'downloading':
-      return { text: `Downloading ${s.version ?? 'update'} · ${s.percent ?? 0}%`, tone: 'accent' };
+      return { text: 'Downloading {version} · {percent}%', tone: 'accent' };
     case 'ready':
-      return { text: `Restart to update to ${s.version}`, tone: 'success' };
+      return { text: 'Restart to update to {version}', tone: 'success' };
     case 'available':
-      return { text: `Raylit ${s.version} available`, tone: 'accent' };
+      return { text: 'Raylit {version} available', tone: 'accent' };
     case 'error':
       return { text: 'Update check failed', tone: 'error' };
     default:

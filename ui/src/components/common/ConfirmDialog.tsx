@@ -1,9 +1,11 @@
 import { AlertTriangle } from 'lucide-react';
 import { useState } from 'react';
+import { useT } from '../../i18n';
 import { useUi } from '../../store/ui';
 import { Dialog } from './Dialog';
 
 export function ConfirmDialog() {
+  const t = useT();
   const c = useUi((s) => s.confirm);
   const [checked, setChecked] = useState(false);
   if (!c) return null;
@@ -20,7 +22,7 @@ export function ConfirmDialog() {
       footer={
         <>
           <button className="btn" onClick={() => close(false)} autoFocus>
-            Cancel
+            {t('Cancel')}
           </button>
           <button className={`btn ${c.danger ? 'btn-danger' : 'btn-primary'}`} onClick={() => close(true)}>
             {c.confirmLabel}

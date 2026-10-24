@@ -79,6 +79,7 @@ export class Manager extends EventEmitter {
   private op: Promise<unknown> = Promise.resolve();
   private saving: Promise<void> = Promise.resolve();
   private testing = false;
+  private testRun: Promise<void> | null = null;
   private readonly files: { servers: string; settings: string; runtime: string; tunnel: string; test: string };
 
   readonly dataDir: string;
@@ -619,8 +620,28 @@ export class Manager extends EventEmitter {
    * Measure the delay of `ids` (all servers when empty): through Xray when it is installed (a real request to the test
    * address, so a server that accepts TCP but does not work shows as failed), else a TCP connect to the server.
    */
-  async testDelays(ids: string[]): Promise<void> {
-    if (this.testing) return;
+  testDelays(ids: string[]): Promise<void> {
+    // One test at a time: a second request waits for the running one instead of starting another batch of cores.
+    if (!this.testRun) this.testRun = this.runDelayTests(ids).finally(() => (this.testRun = null));
+    return this.testRun;
+  }
+
+  /** Test `groupId`'s servers (all when omitted) and connect to the one with the lowest real delay. */
+  async connectFastest(groupId?: string): Promise<ConnectionState> {
+    const pool = this.servers.filter((s) => !groupId || s.groupId === groupId);
+    if (!pool.length) throw new Error('Add a server first');
+    await this.testRun;
+    await this.testDelays(pool.map((s) => s.id));
+    const best = pool
+      .map((s) => this.getServer(s.id))
+      .filter((s): s is Server => !!s && s.delay !== null && s.delay >= 0)
+      .sort((a, b) => a.delay! - b.delay!)[0];
+    if (!best) throw new Error('No server answered the delay test');
+    this.log('app', `Fastest server: ${best.name} (${best.delay} ms)`);
+    return this.connect(best.id);
+  }
+
+  private async runDelayTests(ids: string[]): Promise<void> {
     const targets = (ids.length ? ids.map((id) => this.getServer(id)) : this.servers).filter((s): s is Server => !!s);
     if (!targets.length) return;
     this.testing = true;

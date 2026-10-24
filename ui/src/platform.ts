@@ -5,6 +5,7 @@ export interface Preferences {
   minimizeToTray: boolean;
   autoUpdate: boolean;
   launchAtLogin: boolean;
+  language: 'en' | 'fa';
 }
 
 /** The tray icon and menu follow the connection. */
@@ -42,6 +43,10 @@ export interface DesktopBridge {
   onCommand(cb: (command: string) => void): () => void;
   readClipboard(): string;
   writeClipboard(text: string): void;
+  /** From the tray panel: bring up the main window, optionally running a command there (e.g. "nav.servers"). */
+  showMainWindow(command?: string): void;
+  hideTrayPanel(): void;
+  quitApp(): void;
 }
 
 declare global {
@@ -80,7 +85,18 @@ function browserPlatform(): Platform {
     onCommand: () => noop,
     readClipboard: () => '',
     writeClipboard: (text) => void navigator.clipboard?.writeText(text).catch(noop),
+    // In a browser the tray panel is just the #tray page: "open the window" goes to the full UI.
+    showMainWindow: () => {
+      window.location.hash = '';
+    },
+    hideTrayPanel: noop,
+    quitApp: noop,
   };
+}
+
+/** This renderer is the small panel that opens from the tray icon (the desktop loads the UI with #tray). */
+export function isTrayPanel(): boolean {
+  return window.location.hash === '#tray';
 }
 
 let current: Platform | null = null;

@@ -35,6 +35,7 @@ export const api = {
   select: (id: string) => call<{ ok: true }>('POST', `/api/servers/${id}/select`),
   connect: (id?: string) => call<ConnectionState>('POST', '/api/connect', { id }),
   disconnect: () => call<ConnectionState>('POST', '/api/disconnect'),
+  connectFastest: (groupId?: string) => call<ConnectionState>('POST', '/api/connect-fastest', { groupId }),
   addSubscription: (name: string, url: string) => call<Subscription>('POST', '/api/subscriptions', { name, url }),
   editSubscription: (id: string, patch: Partial<Pick<Subscription, 'name' | 'url' | 'autoUpdateHours'>>) => call<Subscription>('PATCH', `/api/subscriptions/${id}`, patch),
   deleteSubscription: (id: string) => call<{ ok: true }>('DELETE', `/api/subscriptions/${id}`),

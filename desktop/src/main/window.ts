@@ -15,7 +15,7 @@ interface WindowState {
   maximized: boolean;
 }
 
-const DEFAULT_STATE: WindowState = { width: 1120, height: 740, maximized: false };
+const DEFAULT_STATE: WindowState = { width: 1000, height: 720, maximized: false };
 export const DARK = { bg: '#1b1d21', fg: '#e6e8eb' };
 export const LIGHT = { bg: '#f5f6f8', fg: '#1c1f24' };
 export const TOPBAR_H = 40;
@@ -79,8 +79,8 @@ export function createMainWindow(engine: EngineInfo, preloadPath: string, devUrl
   const kind = titleBarKind();
   const win = new BrowserWindow({
     ...state,
-    minWidth: 720,
-    minHeight: 460,
+    minWidth: 640,
+    minHeight: 520,
     show: false,
     title: 'Raylit',
     icon: iconPath(),

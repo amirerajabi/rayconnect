@@ -1,7 +1,9 @@
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
+import '@fontsource-variable/vazirmatn';
 import App from './App';
-import { getPlatform } from './platform';
+import './i18n';
+import { getPlatform, isTrayPanel } from './platform';
 import { applyBootTheme } from './theme/theme';
 import './theme/tokens.css';
 import './theme/app.css';
@@ -15,7 +17,9 @@ if (import.meta.env.DEV) {
 }
 const platform = getPlatform();
 document.documentElement.classList.add(`os-${platform.os}`);
-if (platform.titleBar) document.documentElement.classList.add(`titlebar-${platform.titleBar}`);
+// The tray panel is a frameless flyout: no title bar to make room for.
+if (platform.titleBar && !isTrayPanel()) document.documentElement.classList.add(`titlebar-${platform.titleBar}`);
+if (isTrayPanel()) document.documentElement.classList.add('tray-window');
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>

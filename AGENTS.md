@@ -10,10 +10,11 @@ Read [docs/STATUS.md](docs/STATUS.md) first: what works, what is unfinished.
 | Path | What |
 | --- | --- |
 | `engine/` | Node + TypeScript, only dependency `ws`. HTTP API under `/api` (bearer token), events on `/ws`. `src/core/Manager.ts` (servers, subscriptions, connect/disconnect, system proxy, delay tests, traffic, log), `links.ts` (share links in and out), `xrayConfig.ts` (Xray JSON), `xray.ts` (find, run and install the core, zip reader), `sysproxy.ts` (OS proxy per platform), `net.ts` (HTTP through a proxy, TCP ping). Tests: `engine/test/engine.test.ts`. |
-| `ui/` | React 18 + Vite + zustand + lucide. `src/app/commands.ts` is the command registry (toolbar, menus, palette, tray and shortcuts use it). Stores in `src/store/`. Theme tokens in `src/theme/tokens.css`. |
-| `desktop/` | Electron main + preload. Starts the engine as a utility process, window, tray (icon follows the connection), auto-updater. Packaging: `electron-builder.yml`; `desktop/core/` is shipped as `resources/core` when it holds an Xray. |
+| `ui/` | React 18 + Vite + zustand + lucide. Layout: glass top bar, icon rail (`components/layout/Rail.tsx`) and one page at a time (`src/pages/`: Home, Servers, Subscriptions, Log, Settings). The same app rendered with `#tray` is the tray panel (`components/Tray/TrayPanel.tsx`). `src/app/commands.ts` is the command registry (pages, palette, tray menu and shortcuts use it). Stores in `src/store/`. Theme tokens in `src/theme/tokens.css`. Text: `src/i18n.ts` + `src/i18n-fa.ts`. |
+| `desktop/` | Electron main + preload. Starts the engine as a utility process, the main window, the tray icon (follows the connection; left click opens the panel window from `tray-panel.ts`, right click the menu), auto-updater. Packaging: `electron-builder.yml`; `desktop/core/` is shipped as `resources/core` when it holds an Xray. |
 | `shared/protocol.ts` | Wire types shared by engine, UI and desktop (types only). |
 | `scripts/run.mjs` | Dev launchers (`browser`, `desktop-dev`, `desktop`). |
+| `scripts/check-i18n.mjs` | `npm run check:i18n`: every UI string has a Persian translation (CI runs it). |
 | `engine/scripts/fetch-core.ts` | Downloads the latest Xray-core (SHA-256 checked) into `desktop/core` for release builds. |
 | `.github/workflows/` | `ci.yml` (typecheck, tests, UI build), `release.yml` (tag `v*` → installers with Xray → GitHub Release). |
 
@@ -25,8 +26,13 @@ Public repo: https://github.com/amirerajabi/raylit (MIT). Releases there are wha
 npm run setup / dev / dev:desktop / typecheck / test / build / dist
 ```
 
-A change is done when `npm run typecheck`, `npm test` and `npm run build` pass. Check UI changes in the running app
-(`npm run dev`, then http://localhost:5174), not only by typechecking.
+A change is done when `npm run typecheck`, `npm test`, `npm run check:i18n` and `npm run build` pass. Check UI changes
+in the running app (`npm run dev`, then http://localhost:5174; the tray panel at http://localhost:5174/#tray), in
+English and in Persian, not only by typechecking.
+
+Electron smoke run with a throwaway profile (PowerShell): set `RAYLIT_NO_SYSPROXY=1`, `RAYLIT_USER_DATA=<scratch>`,
+`RAYLIT_SMOKE_SHOT=<main.png>` and optionally `RAYLIT_SMOKE_TRAY_SHOT=<tray.png>`, then run
+`desktop\node_modules\electron\dist\electron.exe desktop`. It captures, prints `tray: …` / `smoke: …` lines and quits.
 
 ## Rules
 
@@ -43,3 +49,8 @@ A change is done when `npm run typecheck`, `npm test` and `npm run build` pass. 
 - The Xray data folder must be absolute (`Manager` resolves it): Xray runs with its own folder as working directory.
 - Newer Xray servers refuse private destinations; test servers need `finalRules: [{ action: 'allow', ip: [...] }]`.
 - Every engine behaviour change gets a test; the real-tunnel tests run against a local Xray VLESS server.
+- **Two languages.** English is the default; Persian turns the UI right-to-left. Write UI text in English through
+  `t('…')` (or `useT()` in components) and add its Persian to `ui/src/i18n-fa.ts`. In CSS use logical properties
+  (`margin-inline-start`, `inset-inline-end`, `text-align: start`), never left/right, except where the OS dictates
+  the side (the title bar). Numbers with units get `unicode-bidi: plaintext` (`.tabular`), or "3 ms" reads "ms 3".
+  Engine messages and log lines stay English.

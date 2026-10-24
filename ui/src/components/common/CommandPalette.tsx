@@ -1,6 +1,7 @@
 import { CornerDownLeft, Search, Server as ServerIcon } from 'lucide-react';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { COMMANDS, connectTo, runCommand } from '../../app/commands';
+import { useT } from '../../i18n';
 import { delayText, protocolLabel } from '../../lib/format';
 import { useServers } from '../../store/servers';
 import { useUi } from '../../store/ui';
@@ -33,6 +34,7 @@ export function CommandPalette() {
 }
 
 function Palette() {
+  const t = useT();
   const [q, setQ] = useState('');
   const [active, setActive] = useState(0);
   const servers = useServers((s) => s.servers);
@@ -43,12 +45,13 @@ function Palette() {
     const commandsOnly = q.startsWith('>');
     const query = (commandsOnly ? q.slice(1) : q).trim().toLowerCase();
     const cmds: Entry[] = COMMANDS.filter((c) => c.palette !== false && !c.disabled?.())
-      .map((c) => ({ kind: 'command' as const, id: c.id, label: c.label, score: score(c.label, query) }))
+      // Matches the English label too, so English command names work in Persian.
+      .map((c) => ({ kind: 'command' as const, id: c.id, label: t(c.label), score: Math.max(score(t(c.label), query), score(c.label, query)) }))
       .filter((e) => e.score > 0);
     if (commandsOnly) return cmds.sort((a, b) => b.score - a.score);
     const found: Entry[] = query
       ? servers
-          .map((s) => ({ kind: 'server' as const, id: s.id, label: s.name, detail: `${protocolLabel(s.protocol)} · ${delayText(s.delay)}`, score: score(s.name, query) + 5 }))
+          .map((s) => ({ kind: 'server' as const, id: s.id, label: s.name, detail: `${protocolLabel(s.protocol)} · ${delayText(s.delay, t)}`, score: score(s.name, query) + 5 }))
           .filter((e) => e.score > 5)
           .sort((a, b) => b.score - a.score)
           .slice(0, 30)
@@ -70,14 +73,14 @@ function Palette() {
 
   return (
     <div className="overlay top" onMouseDown={(e) => e.target === e.currentTarget && close()}>
-      <div className="palette" role="dialog" aria-label="Command palette">
+      <div className="palette" role="dialog" aria-label={t('Command palette')}>
         <div className="palette-input-row">
           <Search size={16} className="muted" />
           <input
             className="palette-input"
             autoFocus
             value={q}
-            placeholder="Type a server name to connect, or > for commands"
+            placeholder={t('Type a server name to connect, or > for commands')}
             onChange={(e) => setQ(e.target.value)}
             onKeyDown={(e) => {
               if (e.key === 'Escape') close();
@@ -95,7 +98,7 @@ function Palette() {
           />
         </div>
         <div ref={listRef} className="palette-list" role="listbox">
-          {entries.length === 0 && <div className="palette-empty muted">Nothing matches.</div>}
+          {entries.length === 0 && <div className="palette-empty muted">{t('Nothing matches.')}</div>}
           {entries.map((e, i) => {
             const c = e.kind === 'command' ? COMMANDS.find((x) => x.id === e.id) : null;
             return (

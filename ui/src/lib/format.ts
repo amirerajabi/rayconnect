@@ -1,4 +1,5 @@
 import type { Server } from '../../../shared/protocol';
+import { language, t } from '../i18n';
 
 const UNITS = ['B', 'KB', 'MB', 'GB', 'TB'];
 
@@ -30,25 +31,14 @@ export function formatDuration(ms: number): string {
   return h > 0 ? `${h}:${mm}:${ss}` : `${mm}:${ss}`;
 }
 
+/** "today 10:39", "12 Oct 10:39"; in Persian with the Persian calendar and digits, as people there read dates. */
 export function formatDate(ms: number | null | undefined): string {
-  if (!ms) return 'never';
+  if (!ms) return t('never');
+  const locale = language() === 'fa' ? 'fa-IR' : undefined;
   const d = new Date(ms);
   const sameDay = d.toDateString() === new Date().toDateString();
-  const time = d.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' });
-  return sameDay ? `today ${time}` : `${d.toLocaleDateString(undefined, { day: 'numeric', month: 'short' })} ${time}`;
-}
-
-/** "in 12 days", "expired" */
-export function formatExpiry(ms: number | null | undefined): string {
-  if (!ms) return 'no expiry';
-  const days = Math.ceil((ms - Date.now()) / 86_400_000);
-  if (days < 0) return 'expired';
-  if (days === 0) return 'expires today';
-  return `${days} day${days === 1 ? '' : 's'} left`;
-}
-
-export function pluralize(n: number, word: string, plural = `${word}s`): string {
-  return `${n} ${n === 1 ? word : plural}`;
+  const time = d.toLocaleTimeString(locale, { hour: '2-digit', minute: '2-digit' });
+  return sameDay ? t('today {time}', { time }) : `${d.toLocaleDateString(locale, { day: 'numeric', month: 'short' })} ${time}`;
 }
 
 const PROTOCOL_LABEL: Record<Server['protocol'], string> = { vmess: 'VMess', vless: 'VLESS', trojan: 'Trojan', shadowsocks: 'Shadowsocks' };
@@ -73,8 +63,8 @@ export function delayTone(delay: number | null | undefined): DelayTone {
   return 'slow';
 }
 
-export function delayText(delay: number | null | undefined): string {
+export function delayText(delay: number | null | undefined, tr: (s: string) => string = (s) => s): string {
   if (delay === null || delay === undefined) return '—';
-  if (delay < 0) return 'Timeout';
+  if (delay < 0) return tr('Timeout');
   return `${delay} ms`;
 }

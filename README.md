@@ -10,8 +10,11 @@ connected. Built like [Grabbit](https://github.com/amirerajabi/grabbit): Electro
 - **System proxy or Proxy only:** System proxy points your computer's proxy at Raylit while connected and puts your own
   setting back afterwards (also after a crash). Proxy only just opens HTTP `10819` and SOCKS `10818`.
 - **Real delay tests:** each server is tested with a real request through Xray, so "works" means it actually works.
+  **Connect to the fastest server** does the test and connects to the quickest in one click.
 - **Routing:** everything through the server, or Iranian / Chinese / Russian sites direct; optional ad blocking.
-- Live speed graph, the core's log, tray icon with Connect / Disconnect, light and dark themes, command palette (Ctrl+K).
+- **Tray panel:** click the tray icon to connect, switch servers or change the proxy mode without opening the window.
+- **English or فارسی:** Persian turns the whole UI right to left (Settings → General → Language).
+- Live speed graph, the core's log, light and dark themes, command palette (Ctrl+K).
 
 Raylit runs [Xray-core](https://github.com/XTLS/Xray-core) (MPL-2.0), which the release builds include unmodified.
 Settings → Xray core can download a newer one (checked against the release's SHA-256) or use an `xray` executable you
@@ -31,9 +34,9 @@ macOS, right-click the app and choose **Open** the first time.
 | | |
 | --- | --- |
 | Add servers | Copy a share link or subscription link, then press **Ctrl+V** in the window (or **Paste**). |
-| Connect | The big power button, **Ctrl+Enter**, double-click a server, or the tray menu. |
-| Find a fast server | **Test** (Ctrl+T), then **Fastest** to sort by delay. |
-| Routing, ad blocking | The **Mode** tab on the left. |
+| Connect | The big power button, **Ctrl+Enter**, double-click a server card, or the tray icon. |
+| Find a fast server | **Connect to the fastest server**, or **Test** (Ctrl+T) then **Fastest first** on the Servers page. |
+| Routing, proxy mode | The switches under the power button; everything else in Settings. |
 
 ## Development
 

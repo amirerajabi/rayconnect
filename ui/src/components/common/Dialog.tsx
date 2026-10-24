@@ -1,5 +1,6 @@
 import { X } from 'lucide-react';
 import { useEffect, useRef, type ReactNode } from 'react';
+import { t } from '../../i18n';
 
 interface DialogProps {
   title: ReactNode;
@@ -60,7 +61,7 @@ export function Dialog({ title, icon, width = 520, onClose, footer, children, cl
             {icon}
             <span>{title}</span>
           </div>
-          <button className="icon-btn sm" onClick={onClose} aria-label="Close" title="Close (Esc)">
+          <button className="icon-btn sm" onClick={onClose} aria-label={t('Close')} title={t('Close (Esc)')}>
             <X size={16} />
           </button>
         </div>

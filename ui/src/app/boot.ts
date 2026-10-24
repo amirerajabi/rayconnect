@@ -1,6 +1,7 @@
 import type { EngineEvent } from '../../../shared/protocol';
 import { api } from '../api/client';
 import { connectEvents } from '../api/ws';
+import { displayName } from '../components/common/visuals';
 import { getPlatform } from '../platform';
 import { useConnection } from '../store/connection';
 import { useEngine } from '../store/engine';
@@ -28,7 +29,7 @@ async function loadState(): Promise<void> {
 
 function syncPreferences(): void {
   const s = useEngine.getState().settings;
-  if (s) getPlatform().setPreferences({ minimizeToTray: s.minimizeToTray, autoUpdate: s.autoUpdate, launchAtLogin: s.launchAtLogin });
+  if (s) getPlatform().setPreferences({ minimizeToTray: s.minimizeToTray, autoUpdate: s.autoUpdate, launchAtLogin: s.launchAtLogin, language: s.language });
 }
 
 /** The tray icon and its Connect / Disconnect item follow the connection. */
@@ -36,7 +37,7 @@ function syncTray(): void {
   const { connection } = useConnection.getState();
   const server = useServers.getState().servers.find((s) => s.id === (connection.serverId ?? useServers.getState().selectedId));
   const status = connection.status === 'connected' ? 'connected' : connection.status === 'connecting' ? 'connecting' : 'disconnected';
-  getPlatform().setTrayState({ status, server: server?.name ?? '', systemProxy: useEngine.getState().settings?.proxyMode === 'system' });
+  getPlatform().setTrayState({ status, server: server ? displayName(server.name) : '', systemProxy: useEngine.getState().settings?.proxyMode === 'system' });
 }
 
 function onEvent(e: EngineEvent): void {

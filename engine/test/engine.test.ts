@@ -148,6 +148,10 @@ describe('settings and core helpers', () => {
     assert.equal(s.routing, 'global');
     assert.deepEqual(s.dns, ['9.9.9.9']);
     assert.throws(() => mergeSettings(defaultSettings(), { socksPort: 2000, httpPort: 2000 }));
+    // English unless the user picks Persian.
+    assert.equal(defaultSettings().language, 'en');
+    assert.equal(mergeSettings(defaultSettings(), { language: 'fa' }).language, 'fa');
+    assert.equal(mergeSettings(defaultSettings(), { language: 'de' as never }).language, 'en');
   });
 
   test('a port Windows has reserved is told apart from one in use', { skip: process.platform !== 'win32' }, async (t) => {
@@ -416,6 +420,24 @@ describe('a real tunnel through Xray', { skip: core ? false : 'no Xray executabl
     assert.deepEqual(proxy.calls, []);
     blocker.close();
     await m.shutdown();
+  });
+
+  test('connect to the fastest server skips the dead one; parallel tests share one run', async (t) => {
+    const m = new Manager(path.join(dir, 'data-fast'), new FakeProxy());
+    await m.load();
+    t.after(() => m.shutdown());
+    await m.updateSettings({ corePath: core!, socksPort: await freePort(), httpPort: await freePort(), testUrl: targetUrl, proxyMode: 'manual' });
+    m.importText(`vless://${UUID}@127.0.0.1:1?type=tcp&security=none#Dead`);
+    m.importText(`vless://${UUID}@127.0.0.1:${serverPort}?type=tcp&security=none#Alive`);
+    const seen = events(m);
+    await Promise.all([m.testDelays([]), m.testDelays([])]);
+    assert.equal(seen.filter((e) => e.type === 'testing' && e.testing).length, 1);
+    const conn = await m.connectFastest();
+    assert.equal(conn.status, 'connected');
+    assert.equal(m.getServer(conn.serverId!)?.name, 'Alive');
+    await m.disconnect();
+    await m.deleteServers([conn.serverId!]);
+    await assert.rejects(m.connectFastest(), /No server answered/);
   });
 
   test('a relative data folder still works (Xray runs in its own folder)', async (t) => {

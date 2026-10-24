@@ -13,6 +13,9 @@ export const CH = {
   updateCheck: 'raylit:update-check',
   updateInstall: 'raylit:update-install',
   appVersion: 'raylit:app-version',
+  showMain: 'raylit:show-main',
+  hidePanel: 'raylit:hide-panel',
+  quitApp: 'raylit:quit-app',
 } as const;
 
 /** additionalArguments passed to the renderer: --raylit-engine=<url> --raylit-token=<token> --raylit-titlebar=<kind> */
@@ -26,6 +29,8 @@ export interface Preferences {
   minimizeToTray: boolean;
   autoUpdate: boolean;
   launchAtLogin: boolean;
+  /** The tray menu follows the UI language. */
+  language: 'en' | 'fa';
 }
 
 export interface TrayState {

@@ -110,6 +110,7 @@ export type ProxyMode = 'system' | 'manual';
 export type RoutingMode = 'global' | 'iran-direct' | 'china-direct' | 'russia-direct';
 export type ThemePref = 'system' | 'light' | 'dark';
 export type LogLevel = 'warning' | 'info' | 'debug';
+export type Language = 'en' | 'fa';
 
 export interface Settings {
   /** system: point the OS proxy at Raylit while connected; manual: only open the local ports. */
@@ -134,6 +135,8 @@ export interface Settings {
   /** Connect to the last server when the app starts. */
   autoConnect: boolean;
   theme: ThemePref;
+  /** UI language; Persian also turns the layout right-to-left. */
+  language: Language;
   minimizeToTray: boolean;
   launchAtLogin: boolean;
   autoUpdate: boolean;

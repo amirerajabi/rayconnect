@@ -36,5 +36,7 @@ jobs:
         run: npm run typecheck
       - name: Engine tests
         run: npm test
+      - name: Every UI string has a Persian translation
+        run: npm run check:i18n
       - name: Build UI
         run: npm --prefix ui run build

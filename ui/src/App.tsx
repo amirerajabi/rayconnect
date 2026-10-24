@@ -1,53 +1,60 @@
 import { RefreshCw } from 'lucide-react';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect } from 'react';
 import { boot, reloadState } from './app/boot';
 import { installKeyboard } from './app/commands';
 import { CommandPalette } from './components/common/CommandPalette';
 import { ConfirmDialog } from './components/common/ConfirmDialog';
 import { MenuHost } from './components/common/Menu';
 import { ShortcutSheet } from './components/common/ShortcutSheet';
-import { Splitter } from './components/common/Splitter';
 import { Toasts } from './components/common/Toasts';
-import { ConnectionPanel } from './components/Connection/ConnectionPanel';
-import { DetailsPane } from './components/DetailsPane/DetailsPane';
 import { AddServersDialog } from './components/Dialogs/AddServersDialog';
 import { EditServerDialog } from './components/Dialogs/EditServerDialog';
 import { SubscriptionDialog } from './components/Dialogs/SubscriptionDialog';
-import { Dock } from './components/layout/Dock';
+import { Rail } from './components/layout/Rail';
 import { TopBar } from './components/layout/TopBar';
-import { ServerList } from './components/ServerList/ServerList';
-import { SettingsDialog } from './components/Settings/SettingsDialog';
-import { StatusBar } from './components/StatusBar/StatusBar';
-import { Toolbar } from './components/Toolbar/Toolbar';
+import { TrayPanel } from './components/Tray/TrayPanel';
+import { useT } from './i18n';
+import { HomePage } from './pages/HomePage';
+import { LogPage } from './pages/LogPage';
+import { ServersPage } from './pages/ServersPage';
+import { SettingsPage } from './pages/SettingsPage';
+import { SubscriptionsPage } from './pages/SubscriptionsPage';
+import { isTrayPanel } from './platform';
 import { useUi } from './store/ui';
 import { useTheme } from './theme/theme';
 
-/** Shell (Rowlit / Grabbit layout): glass top bar, dock | workspace (connection, toolbar, list, details), status bar, overlays. */
+const PAGES = { home: HomePage, servers: ServersPage, subscriptions: SubscriptionsPage, log: LogPage, settings: SettingsPage };
+
+/** Shell: glass top bar (the title bar), icon rail | one page, overlays. The tray panel is the same app in a small window. */
 export default function App() {
   const theme = useTheme();
+  const tray = isTrayPanel();
   useEffect(() => {
     boot();
-    return installKeyboard();
-  }, []);
-
+    return tray ? undefined : installKeyboard();
+  }, [tray]);
+  if (tray) {
+    return (
+      <>
+        <TrayPanel />
+        <Toasts />
+        <SubscriptionDialog />
+        <AddServersDialog />
+      </>
+    );
+  }
   return (
     <div className="app">
       <TopBar theme={theme} />
       <EngineBanner />
       <div className="main">
-        <Dock />
-        <section className="workspace" aria-label="Servers">
-          <ConnectionPanel />
-          <Toolbar />
-          <Workspace />
-        </section>
+        <Rail />
+        <CurrentPage />
       </div>
-      <StatusBar />
       <MenuHost />
       <AddServersDialog />
       <SubscriptionDialog />
       <EditServerDialog />
-      <SettingsDialog />
       <CommandPalette />
       <ShortcutSheet />
       <ConfirmDialog />
@@ -56,45 +63,26 @@ export default function App() {
   );
 }
 
-/** List over details, with a draggable split; the details height is remembered. */
-function Workspace() {
-  const visible = useUi((s) => s.detailsVisible);
-  const height = useUi((s) => s.detailsHeight);
-  const ref = useRef<HTMLDivElement>(null);
-  const [start, setStart] = useState(0);
+function CurrentPage() {
+  const page = useUi((s) => s.page);
+  const Page = PAGES[page];
   return (
-    <div className="workspace-body" ref={ref}>
-      <ServerList />
-      {visible && (
-        <>
-          <Splitter
-            direction="horizontal"
-            ariaLabel="Resize details pane"
-            onDragStart={() => setStart((ref.current?.querySelector('.details') as HTMLElement | null)?.offsetHeight ?? 220)}
-            onDrag={(d) => {
-              const max = (ref.current?.clientHeight ?? 600) - 120;
-              useUi.getState().setLayout({ detailsHeight: Math.max(130, Math.min(max, start - d)) });
-            }}
-            onDoubleClick={() => useUi.getState().setLayout({ detailsHeight: 0 })}
-          />
-          <div className="details-host" style={{ height: height > 0 ? height : undefined }}>
-            <DetailsPane />
-          </div>
-        </>
-      )}
-    </div>
+    <main className="workspace" key={page}>
+      <Page />
+    </main>
   );
 }
 
 function EngineBanner() {
+  const t = useT();
   const err = useUi((s) => s.engineError);
   const ws = useUi((s) => s.wsStatus);
   if (!err && ws !== 'reconnecting') return null;
   return (
     <div className="engine-banner" role="alert">
-      <span>{err ?? 'Lost the connection to the Raylit engine. Reconnecting…'}</span>
+      <span>{err ?? t('Lost the connection to the Raylit engine. Reconnecting…')}</span>
       <button className="btn btn-xs" onClick={() => void reloadState()}>
-        <RefreshCw size={12} /> Retry
+        <RefreshCw size={12} /> {t('Retry')}
       </button>
     </div>
   );

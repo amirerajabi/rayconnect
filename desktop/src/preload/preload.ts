@@ -24,7 +24,7 @@ contextBridge.exposeInMainWorld('raylit', {
   notify: (title: string, body: string) => ipcRenderer.send(CH.notify, String(title), String(body)),
   setTheme: (theme: 'light' | 'dark', colors: { bg: string; fg: string }) => ipcRenderer.send(CH.setTheme, theme, { bg: String(colors.bg), fg: String(colors.fg) }),
   setPreferences: (p: Preferences) =>
-    ipcRenderer.send(CH.setPreferences, { minimizeToTray: !!p.minimizeToTray, autoUpdate: p.autoUpdate !== false, launchAtLogin: !!p.launchAtLogin }),
+    ipcRenderer.send(CH.setPreferences, { minimizeToTray: !!p.minimizeToTray, autoUpdate: p.autoUpdate !== false, launchAtLogin: !!p.launchAtLogin, language: p.language === 'fa' ? 'fa' : 'en' }),
   setTrayState: (s: TrayState) => ipcRenderer.send(CH.setTrayState, { status: String(s.status), server: String(s.server), systemProxy: !!s.systemProxy }),
   appVersion: ipcRenderer.sendSync(CH.appVersion) as string,
   getUpdateStatus: () => ipcRenderer.invoke(CH.updateGet),
@@ -34,4 +34,7 @@ contextBridge.exposeInMainWorld('raylit', {
   readClipboard: (): string => ipcRenderer.sendSync(CH.readClipboard),
   writeClipboard: (text: string) => ipcRenderer.send(CH.writeClipboard, String(text)),
   onCommand: (cb: (command: string) => void) => subscribe<string>(CH.command, cb),
+  showMainWindow: (command?: string) => ipcRenderer.send(CH.showMain, typeof command === 'string' ? command : ''),
+  hideTrayPanel: () => ipcRenderer.send(CH.hidePanel),
+  quitApp: () => ipcRenderer.send(CH.quitApp),
 });

@@ -28,10 +28,23 @@ function run(cmd, args, opts = {}) {
   children.push(child);
   child.on('exit', (code) => {
     // One part exiting ends the session.
-    for (const c of children) if (c !== child && c.exitCode === null) c.kill();
+    for (const c of children) if (c !== child && c.exitCode === null) stop(c);
     process.exitCode = code ?? 0;
   });
   return child;
+}
+
+/**
+ * Stop a child and everything it started. On Windows the children run through a shell, and kill() would only end the
+ * shell, leaving Vite or the engine running on their own.
+ */
+function stop(child) {
+  if (win && child.pid) spawnSync('taskkill', ['/pid', String(child.pid), '/T', '/F'], { stdio: 'ignore' });
+  else child.kill();
+}
+
+function stopAll() {
+  for (const c of children) if (c.exitCode === null) stop(c);
 }
 
 function npm(args, opts) {
@@ -39,16 +52,19 @@ function npm(args, opts) {
   if (r.status !== 0) process.exit(r.status ?? 1);
 }
 
+/** Vite's "localhost" may be IPv4 or IPv6 depending on the machine: try both. */
 function waitForPort(port, timeoutMs = 60000) {
   const until = Date.now() + timeoutMs;
+  const hosts = ['127.0.0.1', '::1'];
+  let attempt = 0;
   return new Promise((resolve, reject) => {
     const tryOnce = () => {
-      const s = net.connect(port, '127.0.0.1');
+      const s = net.connect(port, hosts[attempt++ % hosts.length]);
       s.once('connect', () => (s.destroy(), resolve()));
       s.once('error', () => {
         s.destroy();
         if (Date.now() > until) reject(new Error(`port ${port} did not open`));
-        else setTimeout(tryOnce, 300);
+        else setTimeout(tryOnce, 150);
       });
     };
     tryOnce();
@@ -80,8 +96,14 @@ function electronBinary() {
 }
 
 process.on('SIGINT', () => {
-  for (const c of children) c.kill();
+  stopAll();
   process.exit(0);
+});
+// A launcher that fails (a port that never opens) must not leave the dev servers running behind it.
+process.on('unhandledRejection', (e) => {
+  console.error(e);
+  stopAll();
+  process.exit(1);
 });
 
 if (mode === 'browser') {

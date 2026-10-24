@@ -1,7 +1,7 @@
 import { LoaderCircle, Rss } from 'lucide-react';
 import { useState } from 'react';
 import { api } from '../../api/client';
-import { pluralize } from '../../lib/format';
+import { useT } from '../../i18n';
 import { useServers } from '../../store/servers';
 import { useUi } from '../../store/ui';
 import { Dialog, Field } from '../common/Dialog';
@@ -21,6 +21,7 @@ export function SubscriptionDialog() {
 }
 
 function SubscriptionForm({ id, url: initialUrl }: { id: string | null; url?: string }) {
+  const t = useT();
   const existing = useServers((s) => s.subscriptions.find((x) => x.id === id));
   const [name, setName] = useState(existing?.name ?? '');
   const [url, setUrl] = useState(existing?.url ?? initialUrl ?? '');
@@ -44,7 +45,7 @@ function SubscriptionForm({ id, url: initialUrl }: { id: string | null; url?: st
       const sub = await api.addSubscription(name, url);
       if (hours !== sub.autoUpdateHours) await api.editSubscription(sub.id, { autoUpdateHours: hours });
       const n = useServers.getState().servers.filter((s) => s.groupId === sub.id).length;
-      useUi.getState().toast({ level: 'success', text: `Added "${sub.name}"`, detail: pluralize(n, 'server') });
+      useUi.getState().toast({ level: 'success', text: t('Added "{name}"', { name: sub.name }), detail: t('{n} servers', { n }) });
       useServers.getState().setFilter({ kind: 'group', id: sub.id });
       close();
     } catch (e) {
@@ -56,7 +57,7 @@ function SubscriptionForm({ id, url: initialUrl }: { id: string | null; url?: st
 
   return (
     <Dialog
-      title={existing ? 'Edit subscription' : 'Add subscription'}
+      title={existing ? t('Edit subscription') : t('Add subscription')}
       icon={<Rss size={18} className="text-accent" />}
       width={560}
       onClose={close}
@@ -64,27 +65,27 @@ function SubscriptionForm({ id, url: initialUrl }: { id: string | null; url?: st
       footer={
         <>
           <button className="btn" onClick={close}>
-            Cancel
+            {t('Cancel')}
           </button>
           <button className="btn btn-primary" disabled={!valid || busy} onClick={() => void submit()}>
             {busy && <LoaderCircle size={16} className="spin" />}
-            {existing ? 'Save' : busy ? 'Fetching…' : 'Add'}
+            {existing ? t('Save') : busy ? t('Fetching…') : t('Add')}
           </button>
         </>
       }
     >
       <div className="form">
-        <Field label="Subscription address" hint="The link your provider gave you; it returns your list of servers.">
-          <input className={`input mono-sm${url && !valid ? ' invalid' : ''}`} value={url} autoFocus onChange={(e) => setUrl(e.target.value)} placeholder="https://…" spellCheck={false} />
+        <Field label={t('Subscription address')} hint={t('The link your provider gave you; it returns your list of servers.')}>
+          <input className={`input mono-sm${url && !valid ? ' invalid' : ''}`} dir="ltr" value={url} autoFocus onChange={(e) => setUrl(e.target.value)} placeholder="https://…" spellCheck={false} />
         </Field>
-        <Field label="Name" hint={existing ? undefined : 'Leave empty to use the name the provider sends.'}>
-          <input className="input" value={name} onChange={(e) => setName(e.target.value)} placeholder="My VPN" />
+        <Field label={t('Name')} hint={existing ? undefined : t('Leave empty to use the name the provider sends.')}>
+          <input className="input" value={name} onChange={(e) => setName(e.target.value)} placeholder={t('My VPN')} />
         </Field>
-        <Field label="Update automatically">
+        <Field label={t('Update automatically')}>
           <div className="segmented">
             {AUTO.map((a) => (
               <button key={a.hours} className={hours === a.hours ? 'on' : ''} aria-pressed={hours === a.hours} onClick={() => setHours(a.hours)}>
-                {a.label}
+                {t(a.label)}
               </button>
             ))}
           </div>

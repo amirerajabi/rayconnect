@@ -6,6 +6,7 @@ import * as path from 'node:path';
 import { CH, type Preferences, type TrayState } from '../shared/channels';
 import { startEngine, stopEngine, type EngineInfo } from './engine-process';
 import { iconPath, trayIconPath } from './paths';
+import { TrayPanel } from './tray-panel';
 import { Updater } from './updater';
 import { createMainWindow, DARK, LIGHT, titleBarKind } from './window';
 
@@ -16,10 +17,12 @@ let win: BrowserWindow | null = null;
 let tray: Tray | null = null;
 let engine: EngineInfo | null = null;
 let quitting = false;
-let prefs: Preferences = { minimizeToTray: true, autoUpdate: true, launchAtLogin: false };
+let prefs: Preferences = { minimizeToTray: true, autoUpdate: true, launchAtLogin: false, language: 'en' };
 let trayState: TrayState = { status: 'disconnected', server: '', systemProxy: false };
 let updater: Updater | null = null;
 let lastTrayTip = '';
+let trayMenu: Menu | null = null;
+let panel: TrayPanel | null = null;
 
 if (!app.requestSingleInstanceLock()) {
   app.quit();
@@ -42,6 +45,7 @@ async function start(): Promise<void> {
   installIpc();
   installMenu();
   openWindow();
+  panel = new TrayPanel(engine, path.join(__dirname, 'preload.js'), devUrl);
   createTray();
 }
 
@@ -67,6 +71,8 @@ function openWindow(): void {
   });
   win.on('closed', () => {
     win = null;
+    // The hidden tray panel keeps a window alive, so 'window-all-closed' would never fire: quit here instead.
+    if (!quitting && !(tray && prefs.minimizeToTray)) quit();
   });
 }
 
@@ -83,11 +89,38 @@ function sendCommand(command: string, show = true): void {
   win?.webContents.send(CH.command, command);
 }
 
+/** The tray menu's words in Persian; the menu follows the UI language. */
+const TRAY_FA: Record<string, string> = {
+  'Connected to {server}': 'متصل به {server}',
+  Connected: 'متصل',
+  'Connecting…': 'در حال اتصال…',
+  'Not connected': 'وصل نیست',
+  Connect: 'اتصال',
+  Disconnect: 'قطع اتصال',
+  'Use as system proxy': 'استفاده به عنوان پروکسی سیستم',
+  'Show Raylit': 'نمایش Raylit',
+  'Import from clipboard': 'وارد کردن از کلیپ‌بورد',
+  'Settings…': 'تنظیمات…',
+  Quit: 'خروج',
+};
+
+function tr(text: string, server = ''): string {
+  return (prefs.language === 'fa' ? (TRAY_FA[text] ?? text) : text).replace('{server}', server);
+}
+
 function createTray(): void {
   const image = nativeImage.createFromPath(trayIconPath(false));
   if (image.isEmpty()) return;
   tray = new Tray(image.resize({ width: 16, height: 16 }));
-  tray.on('click', showWindow);
+  // Left click opens the panel, right click the menu. No setContextMenu: on macOS it would take the left click too.
+  tray.on('click', () => {
+    if (panel && tray) panel.toggle(tray.getBounds());
+    else showWindow();
+  });
+  tray.on('right-click', () => {
+    panel?.hide();
+    if (trayMenu) tray?.popUpContextMenu(trayMenu);
+  });
   updateTray();
 }
 
@@ -97,25 +130,23 @@ function updateTray(): void {
   const on = status === 'connected';
   const image = nativeImage.createFromPath(trayIconPath(on));
   if (!image.isEmpty()) tray.setImage(image.resize({ width: 16, height: 16 }));
-  const label = on ? `Connected${server ? ` to ${server}` : ''}` : status === 'connecting' ? 'Connecting…' : 'Not connected';
+  const label = on ? (server ? tr('Connected to {server}', server) : tr('Connected')) : status === 'connecting' ? tr('Connecting…') : tr('Not connected');
   const tip = `Raylit: ${label}`.slice(0, 127);
   // Logged so smoke tests (and bug reports) can see what the tray shows.
   if (tip !== lastTrayTip) console.log(`tray: ${tip}${on ? ' [green icon]' : ''}`);
   lastTrayTip = tip;
   tray.setToolTip(tip);
-  tray.setContextMenu(
-    Menu.buildFromTemplate([
-      { label, enabled: false },
-      { label: on || status === 'connecting' ? 'Disconnect' : 'Connect', click: () => sendCommand('conn.toggle', false) },
-      { label: 'Use as system proxy', type: 'checkbox', checked: systemProxy, click: () => sendCommand('proxy.toggle', false) },
-      { type: 'separator' },
-      { label: 'Show Raylit', click: showWindow },
-      { label: 'Import from clipboard', click: () => sendCommand('server.paste') },
-      { label: 'Settings…', click: () => sendCommand('view.settings') },
-      { type: 'separator' },
-      { label: 'Quit', click: quit },
-    ]),
-  );
+  trayMenu = Menu.buildFromTemplate([
+    { label, enabled: false },
+    { label: on || status === 'connecting' ? tr('Disconnect') : tr('Connect'), click: () => sendCommand('conn.toggle', false) },
+    { label: tr('Use as system proxy'), type: 'checkbox', checked: systemProxy, click: () => sendCommand('proxy.toggle', false) },
+    { type: 'separator' },
+    { label: tr('Show Raylit'), click: showWindow },
+    { label: tr('Import from clipboard'), click: () => sendCommand('server.paste') },
+    { label: tr('Settings…'), click: () => sendCommand('nav.settings') },
+    { type: 'separator' },
+    { label: tr('Quit'), click: quit },
+  ]);
 }
 
 function installMenu(): void {
@@ -166,13 +197,22 @@ function installIpc(): void {
     win.setBackgroundColor(color);
   });
   ipcMain.on(CH.setPreferences, (_e, p: Preferences) => {
-    const next = { minimizeToTray: !!p?.minimizeToTray, autoUpdate: p?.autoUpdate !== false, launchAtLogin: !!p?.launchAtLogin };
+    const next: Preferences = { minimizeToTray: !!p?.minimizeToTray, autoUpdate: p?.autoUpdate !== false, launchAtLogin: !!p?.launchAtLogin, language: p?.language === 'fa' ? 'fa' : 'en' };
     if (next.launchAtLogin !== prefs.launchAtLogin && app.isPackaged) {
       app.setLoginItemSettings({ openAtLogin: next.launchAtLogin, args: ['--hidden'] });
     }
+    const relabel = next.language !== prefs.language;
     prefs = next;
     updater?.configure(prefs.autoUpdate);
+    if (relabel) updateTray();
   });
+  ipcMain.on(CH.showMain, (_e, command: unknown) => {
+    panel?.hide();
+    if (typeof command === 'string' && /^[a-z]+\.[A-Za-z]+$/.test(command)) sendCommand(command);
+    else showWindow();
+  });
+  ipcMain.on(CH.hidePanel, () => panel?.hide());
+  ipcMain.on(CH.quitApp, quit);
   ipcMain.on(CH.setTrayState, (_e, s: TrayState) => {
     const status = s?.status === 'connected' || s?.status === 'connecting' ? s.status : 'disconnected';
     trayState = { status, server: String(s?.server ?? '').slice(0, 80), systemProxy: !!s?.systemProxy };
@@ -206,17 +246,43 @@ function quit(): void {
 
 /** Smoke test (RAYLIT_SMOKE_SHOT=<file.png>): let the UI connect to the engine, capture the window, quit. */
 function smokeShot(file: string): void {
+  const delay = Number(process.env.RAYLIT_SMOKE_DELAY_MS) || 3000;
+  // RAYLIT_SMOKE_TRAY_SHOT=<file.png>: also open the tray panel and capture it.
+  const trayShot = process.env.RAYLIT_SMOKE_TRAY_SHOT;
+  if (trayShot) {
+    setTimeout(() => {
+      try {
+        if (!tray || !panel) throw new Error('no tray icon');
+        panel.toggle(tray.getBounds());
+        console.log(`smoke: tray panel opened at ${JSON.stringify(tray.getBounds())}`);
+      } catch (e) {
+        console.error('smoke: tray panel failed', e);
+      }
+    }, Math.max(0, delay - 2500));
+  }
   setTimeout(async () => {
     try {
-      const image = await win!.webContents.capturePage();
-      writeFileSync(file, image.toPNG());
+      writeFileSync(file, (await win!.webContents.capturePage()).toPNG());
       console.log(`smoke: wrote ${file}`);
+      const panelWin = BrowserWindow.getAllWindows().find((w) => w !== win);
+      if (trayShot && !panelWin) console.error('smoke: no tray panel window to capture');
+      if (trayShot && panelWin) {
+        // The panel hides when it loses focus (the main window takes it during a smoke run), and a hidden window
+        // never finishes a capture: show it without focus, and give up after a few seconds rather than hang.
+        if (!panelWin.isVisible()) panelWin.showInactive();
+        await new Promise((r) => setTimeout(r, 500));
+        const image = await Promise.race([panelWin.webContents.capturePage(), new Promise<null>((r) => setTimeout(() => r(null), 5000))]);
+        if (image) {
+          writeFileSync(trayShot, image.toPNG());
+          console.log(`smoke: wrote ${trayShot}`);
+        } else console.error('smoke: tray panel capture timed out');
+      }
     } catch (e) {
       console.error('smoke: capture failed', e);
       process.exitCode = 1;
     }
     quit();
-  }, Number(process.env.RAYLIT_SMOKE_DELAY_MS) || 3000);
+  }, delay);
 }
 
 app.on('before-quit', (e) => {
@@ -225,6 +291,7 @@ app.on('before-quit', (e) => {
   // Let the engine disconnect (restoring the system proxy) and save before the app exits.
   e.preventDefault();
   engine = null;
+  panel?.destroy();
   void stopEngine().finally(() => app.quit());
 });
 

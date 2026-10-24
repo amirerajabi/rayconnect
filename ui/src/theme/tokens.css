@@ -183,6 +183,8 @@
   --brand-mark-lit-end: #3b82f6;
 
   --font-ui: 'Segoe UI Variable Text', 'Segoe UI', -apple-system, BlinkMacSystemFont, 'SF Pro Text', Inter, system-ui, sans-serif;
+  /* Persian: Vazirmatn (bundled, @fontsource-variable/vazirmatn), Latin text in it falls back to the UI font. */
+  --font-ui-fa: 'Vazirmatn Variable', Vazirmatn, 'Segoe UI Variable Text', 'Segoe UI', Tahoma, system-ui, sans-serif;
   --font-mono: 'Cascadia Code', 'JetBrains Mono', 'SF Mono', Menlo, Consolas, 'Courier New', monospace;
   --text-xs: 11px;
   --text-sm: 12px;

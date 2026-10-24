@@ -25,6 +25,7 @@ export function defaultSettings(): Settings {
     corePath: '',
     autoConnect: false,
     theme: 'system',
+    language: 'en',
     minimizeToTray: true,
     launchAtLogin: false,
     autoUpdate: true,
@@ -62,6 +63,7 @@ export function mergeSettings(base: Settings, patch: Partial<Settings>): Setting
   if (typeof p.corePath === 'string') s.corePath = p.corePath.trim().replace(/^"|"$/g, '');
   if (typeof p.autoConnect === 'boolean') s.autoConnect = p.autoConnect;
   if (p.theme === 'system' || p.theme === 'light' || p.theme === 'dark') s.theme = p.theme;
+  if (p.language === 'en' || p.language === 'fa') s.language = p.language;
   if (typeof p.minimizeToTray === 'boolean') s.minimizeToTray = p.minimizeToTray;
   if (typeof p.launchAtLogin === 'boolean') s.launchAtLogin = p.launchAtLogin;
   if (typeof p.autoUpdate === 'boolean') s.autoUpdate = p.autoUpdate;

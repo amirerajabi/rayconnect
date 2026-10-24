@@ -2,7 +2,7 @@ import { create } from 'zustand';
 import type { Server, Subscription } from '../../../shared/protocol';
 import { MANUAL_GROUP } from '../../../shared/protocol';
 
-/** Which servers the list shows: all of them, or one group (Manual or a subscription). */
+/** Which servers the Servers page shows: all of them, or one group (Manual or a subscription). */
 export type GroupFilter = { kind: 'all' } | { kind: 'group'; id: string };
 export type SortKey = 'list' | 'name' | 'delay';
 
@@ -11,15 +11,12 @@ interface ServersState {
   subscriptions: Subscription[];
   /** The server Connect uses (engine state). */
   selectedId: string | null;
-  /** Rows highlighted in the list (multi-select for delete and test). */
-  marked: string[];
   filter: GroupFilter;
   query: string;
   sort: SortKey;
   setServers(servers: Server[], selectedId: string | null): void;
   setSubscriptions(subs: Subscription[]): void;
   applyDelays(results: { id: string; delay: number; kind: 'real' | 'tcp' }[]): void;
-  mark(ids: string[]): void;
   setFilter(f: GroupFilter): void;
   setQuery(q: string): void;
   setSort(s: SortKey): void;
@@ -29,15 +26,10 @@ export const useServers = create<ServersState>((set, get) => ({
   servers: [],
   subscriptions: [],
   selectedId: null,
-  marked: [],
   filter: { kind: 'all' },
   query: '',
   sort: 'list',
-  setServers(servers, selectedId) {
-    const ids = new Set(servers.map((s) => s.id));
-    const marked = get().marked.filter((id) => ids.has(id));
-    set({ servers, selectedId, marked: marked.length ? marked : selectedId ? [selectedId] : [] });
-  },
+  setServers: (servers, selectedId) => set({ servers, selectedId }),
   setSubscriptions(subscriptions) {
     const f = get().filter;
     const gone = f.kind === 'group' && f.id !== MANUAL_GROUP && !subscriptions.some((s) => s.id === f.id);
@@ -47,13 +39,12 @@ export const useServers = create<ServersState>((set, get) => ({
     const byId = new Map(results.map((r) => [r.id, r]));
     set({ servers: get().servers.map((s) => (byId.has(s.id) ? { ...s, delay: byId.get(s.id)!.delay, delayKind: byId.get(s.id)!.kind } : s)) });
   },
-  mark: (marked) => set({ marked }),
-  setFilter: (filter) => set({ filter, marked: [] }),
+  setFilter: (filter) => set({ filter }),
   setQuery: (query) => set({ query }),
   setSort: (sort) => set({ sort }),
 }));
 
-/** The rows the list shows, in order. */
+/** The servers the page shows, in order. */
 export function visibleServers(s: Pick<ServersState, 'servers' | 'filter' | 'query' | 'sort'>): Server[] {
   const q = s.query.trim().toLowerCase();
   let list = s.servers.filter((x) => s.filter.kind === 'all' || x.groupId === s.filter.id);
@@ -67,7 +58,7 @@ export function visibleServers(s: Pick<ServersState, 'servers' | 'filter' | 'que
   return list;
 }
 
-export function groupName(groupId: string, subs: Subscription[]): string {
-  if (groupId === MANUAL_GROUP) return 'Manual';
-  return subs.find((s) => s.id === groupId)?.name ?? 'Subscription';
+/** The group a filter points at, for "connect to the fastest" in that group. */
+export function filterGroupId(f: GroupFilter): string | undefined {
+  return f.kind === 'group' ? f.id : undefined;
 }

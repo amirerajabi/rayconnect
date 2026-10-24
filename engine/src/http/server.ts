@@ -54,6 +54,7 @@ export function createServer(manager: Manager, token: string): http.Server {
 
   route('POST', '/api/connect', ({ body }) => manager.connect(typeof body?.id === 'string' ? body.id : undefined));
   route('POST', '/api/disconnect', () => manager.disconnect());
+  route('POST', '/api/connect-fastest', ({ body }) => manager.connectFastest(typeof body?.groupId === 'string' ? body.groupId : undefined));
 
   route('POST', '/api/subscriptions', ({ body }) => manager.addSubscription(String(body?.name ?? ''), String(body?.url ?? '')));
   route('PATCH', '/api/subscriptions/:id', ({ params, body }) => manager.editSubscription(params.id, body ?? {}));
