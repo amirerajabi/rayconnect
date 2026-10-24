@@ -1991,3 +1991,86 @@ html.tray-window .toasts {
     width: 100%;
   }
 }
+
+/* ---------- routing rules ---------- */
+.rules-head {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin-top: var(--space-2);
+}
+.rule-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+}
+.rule-row {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 6px 8px 6px 12px;
+  padding-inline: 12px 8px;
+  border-bottom: 1px solid var(--border-subtle);
+}
+.rule-row:last-child {
+  border-bottom: none;
+}
+.rule-row.off .rule-main {
+  opacity: 0.55;
+}
+.rule-row > .switch {
+  width: 15px;
+  height: 15px;
+  flex-shrink: 0;
+  margin-inline-end: 6px;
+}
+.rule-main {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 2px 4px;
+  border: none;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: inherit;
+  text-align: start;
+  cursor: pointer;
+}
+.rule-main:hover {
+  background: var(--bg-hover);
+}
+.rule-name {
+  font-weight: var(--weight-strong);
+}
+.rule-meta {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  flex-wrap: wrap;
+  font-size: var(--text-xs);
+}
+.route-tag {
+  display: inline-flex;
+  align-items: center;
+  height: 18px;
+  padding: 0 7px;
+  border-radius: 9px;
+  font-weight: var(--weight-strong);
+  border: 1px solid currentColor;
+}
+.route-proxy {
+  color: var(--accent);
+}
+.route-direct {
+  color: var(--success);
+}
+.route-block {
+  color: var(--danger-text);
+}

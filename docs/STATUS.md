@@ -4,6 +4,16 @@ Released: 0.3.0 (tag v0.3.0), the first as RayConnect. Before it: 0.2.0 and 0.1.
 https://github.com/amirerajabi/rayconnect (renamed from `raylit`; GitHub redirects the old URLs, which is how installed
 0.1.0 / 0.2.0 copies find this release).
 
+## On `main`, not released yet
+
+- Routing rules like v2rayN's (Settings → Routing rules): the user's own lists of sites and addresses sent through the
+  server, direct or blocked, checked top to bottom before the built-in rules; plus whitelist mode (unmatched sites use
+  the server) or blacklist mode (unmatched sites go direct). Ready-made templates (Iranian sites direct, Telegram,
+  YouTube and Google, ads). Entries are read by `shared/routing.ts` (sites, words, IPs and ranges, pasted URLs,
+  `geosite:` / `geoip:` lists); a real-Xray test checks that a block rule blocks.
+- The engine no longer exits on a stray socket error (a reset after a request ended, e.g. from a blocked site): it
+  logs it, so the system proxy is never left pointing at a dead engine.
+
 ## In 0.3.0
 
 - Renamed to **RayConnect** (product, packages, env vars `RAYCONNECT_*`, IPC, docs). The app id stays `com.raylit.app`
@@ -37,7 +47,7 @@ https://github.com/amirerajabi/rayconnect (renamed from `raylit`; GitHub redirec
   quit that stops Xray.
 - Ports Windows has reserved (Hyper-V / WinNAT ranges) give their own error instead of "used by another program".
 - "Download Xray": `engine/scripts/fetch-core.ts` uses the same code and fetched, checked and unpacked Xray 26.3.27.
-- `npm run typecheck`, `npm test` (23 tests), `npm run check:i18n` and `npm run build` pass.
+- `npm run typecheck`, `npm test` (28 tests), `npm run check:i18n` and `npm run build` pass.
 
 ## Not verified yet
 

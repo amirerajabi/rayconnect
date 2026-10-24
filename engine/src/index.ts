@@ -33,8 +33,10 @@ function report(msg: unknown): void {
   else if (process.send) process.send(msg);
 }
 
-// A stray rejection must not take the engine down while the system proxy points at it.
+// A stray rejection or socket error must not take the engine down while the system proxy points at it: every app on
+// the machine would lose the network until the next start.
 process.on('unhandledRejection', (e) => manager.log('error', `Unexpected error: ${errorMessage(e)}`));
+process.on('uncaughtException', (e) => manager.log('error', `Unexpected error: ${errorMessage(e)}`));
 
 server.on('error', (e: NodeJS.ErrnoException) => {
   if (e.code === 'EADDRINUSE' && port !== 0) {

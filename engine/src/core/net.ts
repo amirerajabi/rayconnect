@@ -38,6 +38,12 @@ export function fetchUrl(url: string, opts: FetchOptions = {}, redirects = 0): P
   return new Promise<FetchResult>((resolve, reject) => {
     let done = false;
     const sockets: net.Socket[] = [];
+    // A reset can reach a socket after its request has failed or finished (a blocked site, a dropped tunnel). With no
+    // listener that error is thrown and takes the engine down; the request's own handler has already reported it.
+    const track = (s: net.Socket) => {
+      sockets.push(s);
+      s.on('error', () => undefined);
+    };
     const finish = (err: Error | null, result?: FetchResult) => {
       if (done) return;
       done = true;
@@ -62,7 +68,7 @@ export function fetchUrl(url: string, opts: FetchOptions = {}, redirects = 0): P
       } else {
         req = (secure ? https : http).request(common);
       }
-      req.on('socket', (s) => sockets.push(s));
+      req.on('socket', track);
       req.on('error', (e) => finish(e));
       req.on('response', (res) => {
         const ms = Date.now() - started;
@@ -95,10 +101,10 @@ export function fetchUrl(url: string, opts: FetchOptions = {}, redirects = 0): P
 
     if (opts.proxyPort && secure) {
       const connect = http.request({ host: '127.0.0.1', port: opts.proxyPort, method: 'CONNECT', path: `${u.hostname}:${u.port || 443}` });
-      connect.on('socket', (s) => sockets.push(s));
+      connect.on('socket', track);
       connect.on('error', (e) => finish(e));
       connect.on('connect', (res, socket) => {
-        sockets.push(socket);
+        track(socket);
         if (res.statusCode !== 200) return finish(new Error(`Proxy refused the connection (${res.statusCode})`));
         send(socket);
       });

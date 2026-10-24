@@ -143,8 +143,28 @@ export function HomePage() {
               ))}
             </div>
           </div>
+          <RulesSummary />
         </section>
       )}
+    </div>
+  );
+}
+
+/** One line on the user's own rules: how many are on, and where unmatched sites go, with a way to change them. */
+function RulesSummary() {
+  const t = useT();
+  const rules = useEngine((s) => s.settings?.rules ?? []);
+  const defaultRoute = useEngine((s) => s.settings?.defaultRoute ?? 'proxy');
+  const active = rules.filter((r) => r.enabled).length;
+  return (
+    <div className="switch-group">
+      <span className="switch-label">{t('Rules')}</span>
+      <span className="muted switch-note">
+        {active ? t('{n} rules on', { n: active }) : t('No rules')} · {defaultRoute === 'direct' ? t('other sites go direct (blacklist)') : t('other sites use the server (whitelist)')}
+      </span>
+      <button type="button" className="link-btn" onClick={() => runCommand('nav.rules')}>
+        {active || defaultRoute === 'direct' ? t('Edit rules') : t('Add rules')}
+      </button>
     </div>
   );
 }

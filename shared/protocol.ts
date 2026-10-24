@@ -112,6 +112,21 @@ export type ThemePref = 'system' | 'light' | 'dark';
 export type LogLevel = 'warning' | 'info' | 'debug';
 export type Language = 'en' | 'fa';
 
+/** Where a routing rule sends what it matches. */
+export type RuleOutbound = 'proxy' | 'direct' | 'block';
+
+/**
+ * A user's routing rule (v2rayN's custom routing): sites and addresses, one per entry, sent through the server, direct,
+ * or blocked. Entries are kept as typed ("google.com", "geosite:ir", "1.2.3.0/24"); shared/routing.ts reads them.
+ */
+export interface RoutingRule {
+  id: string;
+  name: string;
+  enabled: boolean;
+  outbound: RuleOutbound;
+  entries: string[];
+}
+
 export interface Settings {
   /** system: point the OS proxy at RayConnect while connected; manual: only open the local ports. */
   proxyMode: ProxyMode;
@@ -120,6 +135,10 @@ export interface Settings {
   /** Listen on 0.0.0.0 so other devices on the network can use the proxy. */
   allowLan: boolean;
   routing: RoutingMode;
+  /** The user's rules, checked in order before everything else; the first that matches decides. */
+  rules: RoutingRule[];
+  /** What no rule matched: through the server (whitelist mode) or direct (blacklist mode). */
+  defaultRoute: 'proxy' | 'direct';
   blockAds: boolean;
   /** DNS servers Xray resolves with (IP, DoH URL or "localhost"). */
   dns: string[];

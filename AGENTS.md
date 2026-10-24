@@ -13,6 +13,7 @@ Read [docs/STATUS.md](docs/STATUS.md) first: what works, what is unfinished.
 | `ui/` | React 18 + Vite + zustand + lucide. Layout: glass top bar, icon rail (`components/layout/Rail.tsx`) and one page at a time (`src/pages/`: Home, Servers, Subscriptions, Log, Settings). The same app rendered with `#tray` is the tray panel (`components/Tray/TrayPanel.tsx`). `src/app/commands.ts` is the command registry (pages, palette, tray menu and shortcuts use it). Stores in `src/store/`. Theme tokens in `src/theme/tokens.css`. Text: `src/i18n.ts` + `src/i18n-fa.ts`. |
 | `desktop/` | Electron main + preload. Starts the engine as a utility process, the main window, the tray icon (follows the connection; left click opens the panel window from `tray-panel.ts`, right click the menu), auto-updater. Packaging: `electron-builder.yml`; `desktop/core/` is shipped as `resources/core` when it holds an Xray. |
 | `shared/protocol.ts` | Wire types shared by engine, UI and desktop (types only). |
+| `shared/routing.ts` | How routing-rule entries are read (sites, IPs, `geosite:` …); code both the engine (Xray config) and the UI (preview) run. |
 | `scripts/run.mjs` | Dev launchers (`browser`, `desktop-dev`, `desktop`). |
 | `scripts/check-i18n.mjs` | `npm run check:i18n`: every UI string has a Persian translation (CI runs it). |
 | `engine/scripts/fetch-core.ts` | Downloads the latest Xray-core (SHA-256 checked) into `desktop/core` for release builds. |

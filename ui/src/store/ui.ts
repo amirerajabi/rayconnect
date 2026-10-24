@@ -2,7 +2,7 @@ import { create } from 'zustand';
 import type { WsStatus } from '../api/ws';
 
 export type Page = 'home' | 'servers' | 'subscriptions' | 'log' | 'settings';
-export type SettingsSection = 'general' | 'proxy' | 'routing' | 'core' | 'updates' | 'about';
+export type SettingsSection = 'general' | 'proxy' | 'routing' | 'rules' | 'core' | 'updates' | 'about';
 
 export interface Toast {
   id: number;

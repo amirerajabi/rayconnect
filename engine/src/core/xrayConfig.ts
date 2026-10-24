@@ -1,7 +1,8 @@
 // Turns a server and the settings into an Xray JSON config. Two shapes: the tunnel itself (SOCKS + HTTP inbounds,
 // routing, DNS, traffic stats on a metrics endpoint) and the delay test (one HTTP inbound per server, each routed to
 // that server's outbound, so one core process measures a whole batch).
-import type { RoutingMode, ServerConfig, Settings } from '../../../shared/protocol';
+import type { RoutingMode, RoutingRule, RuleOutbound, ServerConfig, Settings } from '../../../shared/protocol';
+import { splitEntries } from '../../../shared/routing';
 
 type Json = Record<string, unknown>;
 
@@ -107,6 +108,24 @@ function directRules(mode: RoutingMode): Json[] {
   }
 }
 
+const OUTBOUND_TAG: Record<RuleOutbound, string> = { proxy: TAG.proxy, direct: TAG.direct, block: TAG.block };
+
+/**
+ * The enabled user rules as Xray rules. Domains and IPs become separate Xray rules: fields within one Xray rule must
+ * all match, so a rule with both would match nothing. Entries that cannot be read are left out.
+ */
+export function userRules(rules: RoutingRule[]): Json[] {
+  const out: Json[] = [];
+  for (const r of rules) {
+    if (!r.enabled) continue;
+    const { domains, ips } = splitEntries(r.entries);
+    const outboundTag = OUTBOUND_TAG[r.outbound];
+    if (domains.length) out.push({ type: 'field', domain: domains, outboundTag });
+    if (ips.length) out.push({ type: 'field', ip: ips, outboundTag });
+  }
+  return out;
+}
+
 export function tunnelConfig(server: ServerConfig, s: Settings, metricsPort: number): Json {
   const listen = s.allowLan ? '0.0.0.0' : '127.0.0.1';
   const sniffing = s.sniffing ? { enabled: true, destOverride: ['http', 'tls', 'quic'], routeOnly: true } : { enabled: false };
@@ -129,10 +148,15 @@ export function tunnelConfig(server: ServerConfig, s: Settings, metricsPort: num
       domainStrategy: 'IPIfNonMatch',
       rules: [
         { type: 'field', inboundTag: [TAG.metricsIn], outboundTag: TAG.metricsOut },
+        // The user's own rules first: they are the most specific, and the first rule that matches decides.
+        ...userRules(s.rules),
         ...(s.blockAds ? [{ type: 'field', domain: ['geosite:category-ads-all'], outboundTag: TAG.block }] : []),
         { type: 'field', ip: ['geoip:private'], outboundTag: TAG.direct },
         { type: 'field', domain: ['localhost'], outboundTag: TAG.direct },
         ...directRules(s.routing),
+        // Blacklist mode: whatever no rule sent through the server goes direct (without it, the first outbound,
+        // the server, takes everything left).
+        ...(s.defaultRoute === 'direct' ? [{ type: 'field', network: 'tcp,udp', outboundTag: TAG.direct }] : []),
       ],
     },
   };

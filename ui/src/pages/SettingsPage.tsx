@@ -1,10 +1,11 @@
-import { Cpu, Download, FolderOpen, Info, LoaderCircle, Network, RefreshCw, Route, Settings, ShieldCheck, SlidersHorizontal, Zap } from 'lucide-react';
+import { Cpu, Download, FolderOpen, Info, ListFilter, LoaderCircle, Network, RefreshCw, Route, Settings, ShieldCheck, SlidersHorizontal, Zap } from 'lucide-react';
 import { useState, type ReactNode } from 'react';
 import type { LogLevel, Settings as SettingsT } from '../../../shared/protocol';
 import { api } from '../api/client';
 import { attempt, isConnected } from '../app/commands';
 import { Field } from '../components/common/Dialog';
 import { BrandMark } from '../components/common/visuals';
+import { RulesSection } from './RulesSection';
 import { useT } from '../i18n';
 import { ROUTING_LABEL, ROUTING_MODES } from '../lib/routing';
 import { getPlatform } from '../platform';
@@ -16,6 +17,7 @@ const SECTIONS: { id: SettingsSection; label: string; Icon: typeof Settings }[] 
   { id: 'general', label: 'General', Icon: SlidersHorizontal },
   { id: 'proxy', label: 'Proxy', Icon: Network },
   { id: 'routing', label: 'Routing & DNS', Icon: Route },
+  { id: 'rules', label: 'Routing rules', Icon: ListFilter },
   { id: 'core', label: 'Xray core', Icon: Cpu },
   { id: 'updates', label: 'Updates', Icon: RefreshCw },
   { id: 'about', label: 'About', Icon: Info },
@@ -182,6 +184,8 @@ function Section({ id, s }: { id: SettingsSection; s: SettingsT }) {
           <Toggle label={t('Multiplex connections (Mux)')} hint={t('Fewer handshakes on slow links. Not used with XTLS Vision or XHTTP.')} checked={s.mux} onChange={(v) => save({ mux: v })} />
         </div>
       );
+    case 'rules':
+      return <RulesSection s={s} />;
     case 'core':
       return <CoreSection s={s} />;
     case 'updates':

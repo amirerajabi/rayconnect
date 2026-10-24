@@ -9,14 +9,15 @@ import * as os from 'node:os';
 import * as path from 'node:path';
 import { deflateRawSync } from 'node:zlib';
 import { after, before, describe, test } from 'node:test';
-import type { EngineEvent, ServerConfig } from '../../shared/protocol';
+import type { EngineEvent, RoutingRule, ServerConfig } from '../../shared/protocol';
 import { buildLink, parseLink, parseLinks } from '../src/core/links';
 import { Manager, serverKey } from '../src/core/Manager';
 import { fetchUrl, freePort, portProblem } from '../src/core/net';
 import { parseUserInfo } from '../src/core/subscription';
 import type { ProxySnapshot, SystemProxy } from '../src/core/sysproxy';
 import { assetDir, releaseAsset, unzip } from '../src/core/xray';
-import { delayTestConfig, tunnelConfig } from '../src/core/xrayConfig';
+import { delayTestConfig, tunnelConfig, userRules } from '../src/core/xrayConfig';
+import { parseEntry, splitEntries } from '../../shared/routing';
 import { defaultSettings, mergeSettings } from '../src/core/settings';
 
 const UUID = '6c2d2a8e-1f0b-4b6e-9a51-3f1f5f1d2c11';
@@ -138,6 +139,77 @@ describe('xray config', () => {
     assert.deepEqual(cfg.inbounds.map((i: any) => i.port), [1001, 1002, 1003]);
     assert.deepEqual(cfg.routing.rules.map((r: any) => [r.inboundTag[0], r.outboundTag]), [['in0', 'out0'], ['in1', 'out1'], ['in2', 'out2']]);
     assert.equal(cfg.outbounds[2].protocol, 'shadowsocks');
+  });
+});
+
+describe('routing rules', () => {
+  test('entries are read the way people type them', () => {
+    const cases: [string, string, string][] = [
+      ['example.com', 'domain', 'domain:example.com'],
+      ['*.Example.com', 'domain', 'domain:example.com'],
+      ['https://news.example.org/page?x=1', 'domain', 'domain:news.example.org'],
+      ['google', 'domain', 'keyword:google'],
+      ['geosite:category-ir', 'domain', 'geosite:category-ir'],
+      ['regexp:^ads\\.', 'domain', 'regexp:^ads\\.'],
+      ['full:www.x.ir', 'domain', 'full:www.x.ir'],
+      ['1.2.3.4', 'ip', '1.2.3.4'],
+      ['10.0.0.0/8', 'ip', '10.0.0.0/8'],
+      ['2001:db8::/32', 'ip', '2001:db8::/32'],
+      ['GeoIP:IR', 'ip', 'geoip:ir'],
+      ['# a comment', 'skip', ''],
+      ['', 'skip', ''],
+      ['not a domain!', 'invalid', 'not a domain!'],
+      ['1.2.3.4/40', 'invalid', '1.2.3.4/40'],
+      ['geosite:', 'invalid', 'geosite:'],
+    ];
+    for (const [input, kind, value] of cases) assert.deepEqual(parseEntry(input), { kind, value }, input);
+    assert.deepEqual(splitEntries(['a.com', 'a.com', '8.8.8.8', 'bad entry!']), { domains: ['domain:a.com'], ips: ['8.8.8.8'], invalid: ['bad entry!'] });
+  });
+
+  test('user rules come first, in order; domains and IPs are separate Xray rules; disabled rules are left out', () => {
+    const rules: RoutingRule[] = [
+      { id: 'a', name: 'Work', enabled: true, outbound: 'direct', entries: ['intranet.example', '10.1.0.0/16'] },
+      { id: 'b', name: 'Off', enabled: false, outbound: 'block', entries: ['x.com'] },
+      { id: 'c', name: 'Ads', enabled: true, outbound: 'block', entries: ['doubleclick.net'] },
+      { id: 'd', name: 'Empty', enabled: true, outbound: 'proxy', entries: ['# nothing yet'] },
+    ];
+    assert.deepEqual(userRules(rules), [
+      { type: 'field', domain: ['domain:intranet.example'], outboundTag: 'direct' },
+      { type: 'field', ip: ['10.1.0.0/16'], outboundTag: 'direct' },
+      { type: 'field', domain: ['domain:doubleclick.net'], outboundTag: 'block' },
+    ]);
+    const cfg = tunnelConfig(parseLink(VMESS)!.config, { ...defaultSettings(), rules, blockAds: true }, 1) as any;
+    const r = cfg.routing.rules;
+    assert.equal(r[0].inboundTag[0], 'metrics_in');
+    assert.deepEqual(r[1].domain, ['domain:intranet.example']);
+    // Before the built-in ad block and the private-network rule, so a user can override them.
+    assert.ok(r.findIndex((x: any) => x.domain?.[0] === 'geosite:category-ads-all') > 3);
+    // Whitelist (default): no catch-all; the server takes the rest.
+    assert.equal(r.some((x: any) => x.network), false);
+  });
+
+  test('blacklist mode sends whatever is left direct, as the very last rule', () => {
+    const rules: RoutingRule[] = [{ id: 'a', name: 'Blocked sites', enabled: true, outbound: 'proxy', entries: ['youtube.com', 'geosite:telegram'] }];
+    const r = (tunnelConfig(parseLink(VMESS)!.config, { ...defaultSettings(), rules, defaultRoute: 'direct' }, 1) as any).routing.rules;
+    assert.deepEqual(r[1], { type: 'field', domain: ['domain:youtube.com', 'geosite:telegram'], outboundTag: 'proxy' });
+    assert.deepEqual(r[r.length - 1], { type: 'field', network: 'tcp,udp', outboundTag: 'direct' });
+  });
+
+  test('rules from the UI are cleaned up', () => {
+    const s = mergeSettings(defaultSettings(), {
+      defaultRoute: 'direct',
+      rules: [
+        { id: 'x', name: '  Work  ', enabled: true, outbound: 'nowhere' as never, entries: [' a.com ', 'a.com', '', 7 as never] },
+        { id: 'x', name: 'Dup id', enabled: false, outbound: 'block', entries: [] },
+        null as never,
+      ],
+    });
+    assert.equal(s.defaultRoute, 'direct');
+    assert.equal(s.rules.length, 2);
+    assert.deepEqual([s.rules[0].name, s.rules[0].outbound, s.rules[0].entries], ['Work', 'proxy', ['a.com']]);
+    assert.notEqual(s.rules[1].id, 'x');
+    assert.equal(s.rules[1].enabled, false);
+    assert.equal(mergeSettings(defaultSettings(), { defaultRoute: 'sideways' as never }).defaultRoute, 'proxy');
   });
 });
 
@@ -438,6 +510,27 @@ describe('a real tunnel through Xray', { skip: core ? false : 'no Xray executabl
     await m.disconnect();
     await m.deleteServers([conn.serverId!]);
     await assert.rejects(m.connectFastest(), /No server answered/);
+  });
+
+  test("a user's block rule really blocks, and removing it lets the request through", async (t) => {
+    const m = new Manager(path.join(dir, 'data-rules'), new FakeProxy());
+    await m.load();
+    t.after(() => m.shutdown());
+    const httpPort = await freePort();
+    // The test page is on loopback: without a rule it goes direct (the private-network rule) and works.
+    await m.updateSettings({ corePath: core!, socksPort: await freePort(), httpPort, proxyMode: 'manual', rules: [{ id: 'r1', name: 'Block test page', enabled: true, outbound: 'block', entries: ['127.0.0.1'] }] });
+    m.importText(`vless://${UUID}@127.0.0.1:${serverPort}?type=tcp&security=none#Local`);
+    assert.equal((await m.connect()).status, 'connected');
+    await assert.rejects(fetchUrl(targetUrl, { proxyPort: httpPort, timeoutMs: 3000 }));
+    // Changing the rules reconnects with the new routing.
+    await m.updateSettings({ rules: [] });
+    const until = Date.now() + 10_000;
+    let status = 0;
+    while (Date.now() < until && status !== 204) {
+      status = await fetchUrl(targetUrl, { proxyPort: httpPort, timeoutMs: 2000 }).then((r) => r.status, () => 0);
+      if (status !== 204) await new Promise((r) => setTimeout(r, 200));
+    }
+    assert.equal(status, 204);
   });
 
   test('a relative data folder still works (Xray runs in its own folder)', async (t) => {

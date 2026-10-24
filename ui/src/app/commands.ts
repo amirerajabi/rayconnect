@@ -7,6 +7,7 @@ import {
   House,
   Keyboard,
   Languages,
+  ListFilter,
   Pencil,
   Plus,
   Power,
@@ -211,6 +212,7 @@ export const COMMANDS: Command[] = [
   { id: 'nav.subscriptions', label: 'Go to Subscriptions', icon: Rss, shortcut: 'Mod+3', run: nav('subscriptions') },
   { id: 'nav.log', label: 'Go to Log', icon: ScrollText, shortcut: 'Mod+4', run: nav('log') },
   { id: 'nav.settings', label: 'Settings', icon: Settings, shortcut: 'Mod+,', run: nav('settings') },
+  { id: 'nav.rules', label: 'Routing rules (whitelist / blacklist)', icon: ListFilter, run: () => useUi.getState().go('settings', 'rules') },
   {
     id: 'view.focusFilter',
     label: 'Search servers',

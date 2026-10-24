@@ -1,5 +1,5 @@
-import type { LogLevel, RoutingMode, Settings } from '../../../shared/protocol';
-import { clamp } from './util';
+import type { LogLevel, RoutingMode, RoutingRule, RuleOutbound, Settings } from '../../../shared/protocol';
+import { clamp, newId } from './util';
 
 /** Hosts that never go through the system proxy: this machine and the private networks. */
 export const DEFAULT_BYPASS = ['localhost', '127.*', '10.*', '172.16.*', '172.17.*', '172.18.*', '172.19.*', '172.2*', '172.30.*', '172.31.*', '192.168.*'];
@@ -15,6 +15,8 @@ export function defaultSettings(): Settings {
     httpPort: 10819,
     allowLan: false,
     routing: 'global',
+    rules: [],
+    defaultRoute: 'proxy',
     blockAds: false,
     dns: ['1.1.1.1', '8.8.8.8'],
     bypass: DEFAULT_BYPASS,
@@ -41,6 +43,30 @@ function strings(v: unknown): string[] | null {
   return [...new Set(v.filter((x): x is string => typeof x === 'string').map((x) => x.trim()).filter(Boolean))];
 }
 
+const OUTBOUNDS: RuleOutbound[] = ['proxy', 'direct', 'block'];
+const MAX_RULES = 100;
+const MAX_ENTRIES = 10_000;
+
+/** Routing rules from the UI (or a hand-edited settings file), each field made valid; entries stay as typed. */
+function rules(list: unknown[]): RoutingRule[] {
+  const ids = new Set<string>();
+  return list
+    .filter((r): r is Record<string, unknown> => !!r && typeof r === 'object')
+    .slice(0, MAX_RULES)
+    .map((r) => {
+      let id = typeof r.id === 'string' && /^[\w-]{1,40}$/.test(r.id) ? r.id : newId();
+      if (ids.has(id)) id = newId();
+      ids.add(id);
+      return {
+        id,
+        name: typeof r.name === 'string' ? r.name.trim().slice(0, 80) : '',
+        enabled: r.enabled !== false,
+        outbound: OUTBOUNDS.includes(r.outbound as RuleOutbound) ? (r.outbound as RuleOutbound) : 'proxy',
+        entries: (strings(r.entries) ?? []).filter((e) => e.length <= 500).slice(0, MAX_ENTRIES),
+      };
+    });
+}
+
 /** Merge a partial update into the settings, coercing every field to a valid value. */
 export function mergeSettings(base: Settings, patch: Partial<Settings>): Settings {
   const s: Settings = { ...base };
@@ -51,6 +77,8 @@ export function mergeSettings(base: Settings, patch: Partial<Settings>): Setting
   if (s.socksPort === s.httpPort) throw new Error('The SOCKS and HTTP ports must differ');
   if (typeof p.allowLan === 'boolean') s.allowLan = p.allowLan;
   if (ROUTING.includes(p.routing as RoutingMode)) s.routing = p.routing as RoutingMode;
+  if (Array.isArray(p.rules)) s.rules = rules(p.rules);
+  if (p.defaultRoute === 'proxy' || p.defaultRoute === 'direct') s.defaultRoute = p.defaultRoute;
   if (typeof p.blockAds === 'boolean') s.blockAds = p.blockAds;
   const dns = strings(p.dns);
   if (dns && dns.length) s.dns = dns;
@@ -71,4 +99,4 @@ export function mergeSettings(base: Settings, patch: Partial<Settings>): Setting
 }
 
 /** Settings that change the running tunnel: a change reconnects. */
-export const TUNNEL_KEYS: (keyof Settings)[] = ['socksPort', 'httpPort', 'allowLan', 'routing', 'blockAds', 'dns', 'sniffing', 'mux', 'logLevel', 'corePath'];
+export const TUNNEL_KEYS: (keyof Settings)[] = ['socksPort', 'httpPort', 'allowLan', 'routing', 'rules', 'defaultRoute', 'blockAds', 'dns', 'sniffing', 'mux', 'logLevel', 'corePath'];

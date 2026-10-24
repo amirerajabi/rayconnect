@@ -12,6 +12,9 @@ connected. Built like [Grabbit](https://github.com/amirerajabi/grabbit): Electro
 - **Real delay tests:** each server is tested with a real request through Xray, so "works" means it actually works.
   **Connect to the fastest server** does the test and connects to the quickest in one click.
 - **Routing:** everything through the server, or Iranian / Chinese / Russian sites direct; optional ad blocking.
+- **Your own rules, like v2rayN's:** lists of sites and IPs sent through the server, direct or blocked, and a whitelist
+  or blacklist mode for everything else (Settings → Routing rules). Templates for Iranian sites, Telegram, YouTube and
+  ads.
 - **Tray panel:** click the tray icon to connect, switch servers or change the proxy mode without opening the window.
 - **English or فارسی:** Persian turns the whole UI right to left (Settings → General → Language).
 - Live speed graph, the core's log, light and dark themes, command palette (Ctrl+K).
